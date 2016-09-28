@@ -254,7 +254,6 @@ public class Settings {
                 channels.add(chan.getAsString());
             }
         }
-        System.out.println(channels.toString());
     }
 
     public Object clone() throws CloneNotSupportedException {

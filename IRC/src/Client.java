@@ -229,6 +229,12 @@ public class Client {
             poolFixed.startThread(ircProccesing);
         } catch (IOException e) {
             e.printStackTrace();
+            poolFixed.stopExecutor();
+            try {
+                socketIRC.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 }

@@ -195,12 +195,9 @@ import client.Logger;
 import client.ThreadPoolCached;
 import client.ThreadPoolFixed;
 
-import java.time.LocalDate;
-
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println(LocalDate.now());
         final Logger poolLog = new Logger("POOLS", "POOLS");
         ThreadPoolFixed fixedPool = new ThreadPoolFixed(poolLog);
         ThreadPoolCached cachedPool = new ThreadPoolCached(poolLog);
