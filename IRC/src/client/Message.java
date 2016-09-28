@@ -193,113 +193,142 @@
 
 package client;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+public class Message {
+    private String raw = null;
+    private String rawType = null;
+    private String rawTags = null;
 
-public class WriterThread implements Runnable {
+    private Tags messageTags = null;
 
-    private String user;
-    private String token;
-    private Socket irc;
-    private BufferedWriter outputIRC;
-    private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-    private Future future;
-    private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
-    private ArrayList<String> channels;
+    private String displayName = null;
+    private String channel = null;
+    private String messageType = null;
+    private String message = null;
+    private String user = null;
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<String> queue, ArrayList<String> arr, Future f) {
-        this.user = user;
-        this.token = token;
-        this.irc = c;
-        this.messageQueue = queue;
-        this.channels = arr;
-        this.future = f;
+    Message(String m) {
+        this.raw = m;
+        parseMessage();
     }
 
-    @Override
-    public void run() {
-        try {
-            outputIRC = new BufferedWriter(new OutputStreamWriter(irc.getOutputStream()));
-            authenticate();
-            this.join(this.user);
-            channels.forEach(this::join);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        while (!future.isDone() || !messageQueue.isEmpty()) {
-            try {
-                String m = messageQueue.take();
-                writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
-                if (m.startsWith("PONG")) this.sendRaw(m);
-                    else {this.sendMessage(this.user, m);}
-                writerLogger.write(m, "SENT");
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
+    private void parseMessage() {
+        if (this.raw != null) {
+            if (this.raw.startsWith("PING")) { // If message is PING
+                this.messageType = "SERVER_PING";
+                this.rawType = "PING";
+            }
+            if (this.raw.startsWith(":")) { // If it's server message
+                String[] messageParts = this.raw.split(" ", 4);
+                if (messageParts[0].contains("twitchnotify")) { // If it's a new subscriber
+                    String[] chatParts = messageParts[3].substring(1).split(" ", 2);
+                    this.messageType = "CHANNEL_SUBSCRIBER_NEW";
+                    this.channel = messageParts[2].substring(1);
+                    this.message = messageParts[3].substring(1);
+                    this.displayName = chatParts[0];
+                } else if (messageParts[1].contains("CLEARCHAT")) { // If it's a CLEARCHAT message (Timeout/Ban/Clear)
+                    this.messageType =  "CHANNEL_CLEAR_CHAT";
+                    this.rawType = messageParts[1];
+                    this.channel = messageParts[2].substring(1);
+                } else {
+                    this.messageType = "SERVER_RAW";
+                }
+            }
+            if (this.raw.startsWith("@")) {
+                String[] messageParts = this.raw.split(" ", 5);
+                this.rawType = messageParts[2];
+                this.channel = messageParts[3].substring(1);
+                this.rawTags = messageParts[0].substring(1);
+                this.messageTags = new Tags(rawTags);
+                this.displayName = messageTags.getDisplayName();
+                switch (messageParts[2]) {
+                    case "ROOMSTATE":
+                        parseROOMSTATE(messageParts);
+                        break;
+                    case "USERSTATE":
+                        parseUSERSTATE(messageParts);
+                        break;
+                    case "USERNOTICE":
+                        parseUSERNOTICE(messageParts);
+                        break;
+                    case "NOTICE":
+                        parseNOTICE(messageParts);
+                        break;
+                    case "PRIVMSG":
+                        parsePRIVMSG(messageParts);
+                        break;
+                    case "CLEARCHAT":
+                        parseCLEARCHAT(messageParts);
+                        break;
+                    default:
+                        System.out.println("Invalid Message Type in switch statement");
+                }
             }
         }
     }
 
-    private void authenticate() {
-        try {
-            outputIRC.write("PASS " + this.token + "\r\n");
-            outputIRC.write("NICK " + this.user + "\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/commands\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/tags\r\n");
-            outputIRC.flush();
-            writerLogger.write("Authenticated with the server", "AUTHENTICATION");
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void parseROOMSTATE(String[] messageParts) { // On join or changing chat mode
+        this.messageType = "CHANNEL_STATE";
+    }
+
+    private void parseUSERSTATE(String[] messageParts) { // On join
+        this.messageType = "USER_STATE";
+    }
+
+    private void parseUSERNOTICE(String[] messageParts) { // Only resubscribing?
+        this.messageType = "USER_RESUBSCRIBING";
+    }
+
+    private void parseNOTICE(String[] messageParts) {
+        this.messageType = "CHANNEL_NOTICE";
+    }
+
+    private void parsePRIVMSG(String[] messageParts) {
+        this.messageType = "CHANNEL_MESSAGE";
+        this.message = messageParts[4].substring(1);
+        this.user = messageParts[1].substring(1).split("!")[0];
+    }
+
+    private void parseCLEARCHAT(String[] messageParts) {
+        if (this.messageTags.getBanDuration() > 0) {
+            this.messageType = "CHAT_TIMEOUT";
+        } else if (this.messageTags.getBanDuration() == -1) {
+            this.messageType = "CHAT_BAN";
         }
     }
 
-    public void join(String channel) {
-        try {
-            outputIRC.write("JOIN #" + channel + "\r\n");
-            outputIRC.flush();
-            writerLogger.write("Joined channel #" + channel, "JOIN");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public String getMessage() {
+        return message;
     }
 
-    private void sendMessage(String channel, String message) {
-        try {
-            outputIRC.write("PRIVMSG #" + channel + " :" + message + "\n");
-            outputIRC.flush();
-            System.out.printf("[%s] <%s>: %s%n", channel, this.user, message);
-            writerLogger.write("to #" + channel + ": " + message, "PRIVMSG");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public String getUser() {
+        return user;
     }
 
-    private void sendRaw(String message) {
-        try {
-            outputIRC.write(message);
-            outputIRC.flush();
-            writerLogger.write(message.substring(0, message.length()-2), "RAW_MESSAGE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public String getMessageType() {
+        return messageType;
     }
 
-    public void quit() {
-        try {
-            outputIRC.write("QUIT Leaving...\r\n");
-            outputIRC.flush();
-            writerLogger.write("Disconnected from the server.", "QUIT");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public String getChannel() {
+        return channel;
     }
 
-    public String toString(){
-        return "WRITER THREAD";
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getRaw() {
+        return raw;
+    }
+
+    public String getRawType() {
+        return rawType;
+    }
+
+    public String getRawTags() {
+        return rawTags;
+    }
+
+    public Tags getMessageTags() {
+        return messageTags;
     }
 }

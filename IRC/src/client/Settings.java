@@ -193,113 +193,90 @@
 
 package client;
 
-import java.io.BufferedWriter;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 
-public class WriterThread implements Runnable {
-
+public class Settings {
+    private File fi = new File("settings/config.json");
+    private File fo = new File("settings");
+    private JsonObject settings;
     private String user;
     private String token;
-    private Socket irc;
-    private BufferedWriter outputIRC;
-    private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-    private Future future;
-    private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
-    private ArrayList<String> channels;
+    private ArrayList<String> channels = new ArrayList<>();
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<String> queue, ArrayList<String> arr, Future f) {
-        this.user = user;
-        this.token = token;
-        this.irc = c;
-        this.messageQueue = queue;
-        this.channels = arr;
-        this.future = f;
+    private Settings() throws IOException {
+        this.getSettingsFromJson();
     }
 
-    @Override
-    public void run() {
-        try {
-            outputIRC = new BufferedWriter(new OutputStreamWriter(irc.getOutputStream()));
-            authenticate();
-            this.join(this.user);
-            channels.forEach(this::join);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+    public static synchronized Settings getSettings() throws IOException {
+        if (ref == null) {
+            ref = new Settings();
         }
-        while (!future.isDone() || !messageQueue.isEmpty()) {
-            try {
-                String m = messageQueue.take();
-                writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
-                if (m.startsWith("PONG")) this.sendRaw(m);
-                    else {this.sendMessage(this.user, m);}
-                writerLogger.write(m, "SENT");
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
+        return ref;
+    }
+
+    public synchronized String getUser() {
+        return this.user;
+    }
+
+    public synchronized String getToken() {
+        return this.token;
+    }
+
+    public synchronized ArrayList<String> getChannels() {
+        return this.channels;
+    }
+
+    private void getSettingsFromJson() throws IOException {
+        JsonParser parser = new JsonParser();
+        if (!this.fo.exists() || !this.fo.exists() || !(this.fi.length() > 0)) {
+            this.writeDefault();
+        }
+        JsonElement obj = parser.parse(new FileReader("settings/config.json"));
+        this.settings = obj.getAsJsonObject();
+        if (this.settings.toString().contains("null")) {
+            System.out.println("Please set up your settings first");
+            System.exit(0);
+        } else {
+            this.user = this.settings.get("username").getAsString();
+            this.token = this.settings.get("token").getAsString();
+            JsonArray arr = this.settings.get("channels").getAsJsonArray();
+            for (JsonElement chan : arr) {
+                channels.add(chan.getAsString());
             }
         }
+        System.out.println(channels.toString());
     }
 
-    private void authenticate() {
-        try {
-            outputIRC.write("PASS " + this.token + "\r\n");
-            outputIRC.write("NICK " + this.user + "\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/commands\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/tags\r\n");
-            outputIRC.flush();
-            writerLogger.write("Authenticated with the server", "AUTHENTICATION");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
     }
 
-    public void join(String channel) {
-        try {
-            outputIRC.write("JOIN #" + channel + "\r\n");
-            outputIRC.flush();
-            writerLogger.write("Joined channel #" + channel, "JOIN");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void writeDefault() throws IOException {
+        FileWriter set = new FileWriter(this.fi);
+        JsonParser parser = new JsonParser();
+        JsonObject defaultSettings = parser.parse("{\n" +
+                "  \"username\" : \"null\",\n" +
+                "  \"token\" : \"null\",\n" +
+                "  \"channels\": [\n" +
+                "    \"ricknotastley\"\n" +
+                "  ]\n" +
+                "}").getAsJsonObject();
+        set.write(defaultSettings.toString());
+        set.flush();
+        set.close();
+        System.out.println("Please set up your settings first");
+        System.exit(0);
     }
 
-    private void sendMessage(String channel, String message) {
-        try {
-            outputIRC.write("PRIVMSG #" + channel + " :" + message + "\n");
-            outputIRC.flush();
-            System.out.printf("[%s] <%s>: %s%n", channel, this.user, message);
-            writerLogger.write("to #" + channel + ": " + message, "PRIVMSG");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendRaw(String message) {
-        try {
-            outputIRC.write(message);
-            outputIRC.flush();
-            writerLogger.write(message.substring(0, message.length()-2), "RAW_MESSAGE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void quit() {
-        try {
-            outputIRC.write("QUIT Leaving...\r\n");
-            outputIRC.flush();
-            writerLogger.write("Disconnected from the server.", "QUIT");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public String toString(){
-        return "WRITER THREAD";
-    }
+    private static Settings ref;
 }

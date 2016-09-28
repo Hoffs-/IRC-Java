@@ -193,113 +193,46 @@
 
 package client;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class WriterThread implements Runnable {
+public class ProcessingThread implements Runnable{
 
-    private String user;
-    private String token;
-    private Socket irc;
-    private BufferedWriter outputIRC;
-    private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-    private Future future;
-    private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
-    private ArrayList<String> channels;
+    private LinkedBlockingQueue<Message> messageQueueIn = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<String> messageQueueOut = new LinkedBlockingQueue<>();
+    private Future ircFuture;
+    private ThreadPoolCached poolCached;
+    private Logger processingLogger = new Logger("PROCESSING_LOG", "PROCESSING_THREAD");
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<String> queue, ArrayList<String> arr, Future f) {
-        this.user = user;
-        this.token = token;
-        this.irc = c;
-        this.messageQueue = queue;
-        this.channels = arr;
-        this.future = f;
+    public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<String> n, Future k, ThreadPoolCached th) throws IOException {
+        this.messageQueueIn = m;
+        this.messageQueueOut = n;
+        this.ircFuture = k;
+        this.poolCached = th;
     }
 
     @Override
     public void run() {
-        try {
-            outputIRC = new BufferedWriter(new OutputStreamWriter(irc.getOutputStream()));
-            authenticate();
-            this.join(this.user);
-            channels.forEach(this::join);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        while (!future.isDone() || !messageQueue.isEmpty()) {
+        while (!ircFuture.isDone()) {
             try {
-                String m = messageQueue.take();
-                writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
-                if (m.startsWith("PONG")) this.sendRaw(m);
-                    else {this.sendMessage(this.user, m);}
-                writerLogger.write(m, "SENT");
+                Message m = messageQueueIn.take();
+                processingLogger.write("Got message: " + m.getMessage() + ", of type: " + m.getMessageType());
+                if (Objects.equals(m.getMessageType(), "SERVER_PING")) {
+                    messageQueueOut.offer("PONG " + m.getRaw().substring(5) + "\r\n");
+                }
+                if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
+                    //
+                }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void authenticate() {
-        try {
-            outputIRC.write("PASS " + this.token + "\r\n");
-            outputIRC.write("NICK " + this.user + "\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/commands\r\n");
-            outputIRC.write("CAP REQ :twitch.tv/tags\r\n");
-            outputIRC.flush();
-            writerLogger.write("Authenticated with the server", "AUTHENTICATION");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void join(String channel) {
-        try {
-            outputIRC.write("JOIN #" + channel + "\r\n");
-            outputIRC.flush();
-            writerLogger.write("Joined channel #" + channel, "JOIN");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendMessage(String channel, String message) {
-        try {
-            outputIRC.write("PRIVMSG #" + channel + " :" + message + "\n");
-            outputIRC.flush();
-            System.out.printf("[%s] <%s>: %s%n", channel, this.user, message);
-            writerLogger.write("to #" + channel + ": " + message, "PRIVMSG");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendRaw(String message) {
-        try {
-            outputIRC.write(message);
-            outputIRC.flush();
-            writerLogger.write(message.substring(0, message.length()-2), "RAW_MESSAGE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void quit() {
-        try {
-            outputIRC.write("QUIT Leaving...\r\n");
-            outputIRC.flush();
-            writerLogger.write("Disconnected from the server.", "QUIT");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public String toString(){
-        return "WRITER THREAD";
+        return "Processing Thread";
     }
+
 }
