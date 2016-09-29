@@ -124,7 +124,7 @@ public class Message {
         if ((t.getDisplayName() == null) && this.raw.contains("!")) {
             String[] messageParts = this.raw.split(" ", 3);
             String[] nameParts = messageParts[1].split("!", 2);
-            n = nameParts[1].substring(1);
+            n = nameParts[0].substring(1);
         } else {
             n = t.getDisplayName();
         }
