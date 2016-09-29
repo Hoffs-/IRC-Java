@@ -24,12 +24,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ProcessingThread implements Runnable{
 
     private LinkedBlockingQueue<Message> messageQueueIn = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<String> messageQueueOut = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<MessageOut> messageQueueOut = new LinkedBlockingQueue<>();
     private Future ircFuture;
     private ThreadPoolCached poolCached;
     private Logger processingLogger = new Logger("PROCESSING_LOG", "PROCESSING_THREAD");
 
-    public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<String> n, Future k, ThreadPoolCached th) throws IOException {
+    public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<MessageOut> n, Future k, ThreadPoolCached th) throws IOException {
         this.messageQueueIn = m;
         this.messageQueueOut = n;
         this.ircFuture = k;
@@ -43,7 +43,9 @@ public class ProcessingThread implements Runnable{
                 Message m = messageQueueIn.take();
                 processingLogger.write("Got message: " + m.getMessage() + ", of type: " + m.getMessageType());
                 if (Objects.equals(m.getMessageType(), "SERVER_PING")) {
-                    messageQueueOut.offer("PONG " + m.getRaw().substring(5) + "\r\n");
+                    MessageOut out = new MessageOut("null", "PONG " + m.getRaw().substring(5) + "\r\n", "RAW");
+                    messageQueueOut.offer(out);
+                    //messageQueueOut.offer("PONG " + m.getRaw().substring(5) + "\r\n");
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
                     //
