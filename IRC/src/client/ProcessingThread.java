@@ -16,6 +16,8 @@
 
 package client;
 
+import client.commands.Commands;
+
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.Future;
@@ -45,10 +47,10 @@ public class ProcessingThread implements Runnable{
                 if (Objects.equals(m.getMessageType(), "SERVER_PING")) {
                     MessageOut out = new MessageOut("null", "PONG " + m.getRaw().substring(5) + "\r\n", "RAW");
                     messageQueueOut.offer(out);
-                    //messageQueueOut.offer("PONG " + m.getRaw().substring(5) + "\r\n");
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
-                    //
+                    Commands k = new Commands(m, messageQueueOut);
+                    poolCached.startThread(k);
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
