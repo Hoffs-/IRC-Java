@@ -62,7 +62,7 @@ public class Message {
                 this.channel = messageParts[3].substring(1);
                 this.rawTags = messageParts[0].substring(1);
                 this.messageTags = new Tags(rawTags);
-                this.displayName = messageTags.getDisplayName();
+                this.displayName = this.getDisplayName(messageTags);
                 switch (messageParts[2]) {
                     case "ROOMSTATE":
                         parseROOMSTATE(messageParts);
@@ -117,6 +117,18 @@ public class Message {
         } else if (this.messageTags.getBanDuration() == -1) {
             this.messageType = "CHAT_BAN";
         }
+    }
+
+    private String getDisplayName(Tags t) {
+        String n;
+        if ((t.getDisplayName() == null) && this.raw.contains("!")) {
+            String[] messageParts = this.raw.split(" ", 3);
+            String[] nameParts = messageParts[1].split("!", 2);
+            n = nameParts[1].substring(1);
+        } else {
+            n = t.getDisplayName();
+        }
+        return n;
     }
 
     public String getMessage() {

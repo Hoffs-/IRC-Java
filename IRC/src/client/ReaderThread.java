@@ -23,7 +23,7 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReaderThread implements Runnable {
-
+    private Logger chatLogger = new Logger("CHAT_LOG", "CHAT");
     private Socket irc;
     private Logger rawLogger = new Logger("RAW_READER_LOG", "RAW");
     private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>();
@@ -43,7 +43,8 @@ public class ReaderThread implements Runnable {
                 Message chatMessage = new Message(line);
                 messageQueue.offer(chatMessage);
                 if (chatMessage.getMessage() != null) {
-                    System.out.printf("[%s] <%s>: %s%n", chatMessage.getChannel(), chatMessage.getDisplayName(), chatMessage.getMessage());
+                    System.out.println(String.format("[%s] <%s>: %s", chatMessage.getChannel(), chatMessage.getDisplayName(), chatMessage.getMessage()));
+                    chatLogger.write(String.format("[%s] <%s>: %s", chatMessage.getChannel(), chatMessage.getDisplayName(), chatMessage.getMessage()));
                 }
             }
         } catch (IOException e1) {

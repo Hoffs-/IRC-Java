@@ -30,12 +30,12 @@ public class WriterThread implements Runnable {
     private String token;
     private Socket irc;
     private BufferedWriter outputIRC;
-    private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<MessageOut> messageQueue = new LinkedBlockingQueue<>();
     private Future future;
     private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
     private ArrayList<String> channels;
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<String> queue, ArrayList<String> arr, Future f) {
+    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<MessageOut> queue, ArrayList<String> arr, Future f) {
         this.user = user;
         this.token = token;
         this.irc = c;
@@ -56,11 +56,11 @@ public class WriterThread implements Runnable {
         }
         while (!future.isDone() || !messageQueue.isEmpty()) {
             try {
-                String m = messageQueue.take();
+                MessageOut m = messageQueue.take();
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
-                if (m.startsWith("PONG")) this.sendRaw(m);
-                    else {this.sendMessage(this.user, m);}
-                writerLogger.write(m, "SENT");
+                if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
+                    else {this.sendMessage(m);}
+                writerLogger.write(m.getMessage(), "SENT");
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
@@ -90,12 +90,12 @@ public class WriterThread implements Runnable {
         }
     }
 
-    private void sendMessage(String channel, String message) {
+    private void sendMessage(MessageOut message) {
         try {
-            outputIRC.write("PRIVMSG #" + channel + " :" + message + "\n");
+            outputIRC.write("PRIVMSG #" + message.getChannel() + " :" + message.getMessage() + "\n");
             outputIRC.flush();
-            System.out.printf("[%s] <%s>: %s%n", channel, this.user, message);
-            writerLogger.write("to #" + channel + ": " + message, "PRIVMSG");
+            System.out.printf("[%s] <%s>: %s%n", message.getChannel(), this.user, message.getMessage());
+            writerLogger.write("to #" + message.getChannel() + ": " + message.getMessage(), "PRIVMSG");
         } catch (IOException e) {
             e.printStackTrace();
         }

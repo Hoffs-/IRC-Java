@@ -27,10 +27,11 @@ public class Client {
     private ReaderThread ircReader;
     private WriterThread ircWriter;
     private ProcessingThread ircProccesing;
+    private InputThread ircInput;
     private ThreadPoolFixed poolFixed;
     private ThreadPoolCached poolCached;
     private LinkedBlockingQueue<Message> messageQueueIn = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<String> messageQueueOut = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<MessageOut> messageQueueOut = new LinkedBlockingQueue<>();
     private Settings settings;
 
     public Client(String ip, ThreadPoolFixed pool, ThreadPoolCached poolC) {
@@ -48,8 +49,10 @@ public class Client {
             m = poolFixed.startThread(ircReader);
             ircWriter = new WriterThread(settings.getUser(), settings.getToken(), socketIRC, messageQueueOut, settings.getChannels(), m);
             ircProccesing = new ProcessingThread(messageQueueIn, messageQueueOut, m, poolCached);
+            ircInput = new InputThread(messageQueueOut, m);
             poolFixed.startThread(ircWriter);
             poolFixed.startThread(ircProccesing);
+            poolFixed.startThread(ircInput);
         } catch (IOException e) {
             e.printStackTrace();
             poolFixed.stopExecutor();

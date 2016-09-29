@@ -14,21 +14,33 @@
  *    limitations under the License.
  */
 
-apply plugin: 'idea'
-apply plugin: 'java'
+package client;
 
-sourceCompatibility = 1.8
-version = '0.2'
+public class MessageOut {
+    private String channel = null;
+    private String type = "CHAT";
+    private String message = null;
 
-repositories {
-    mavenCentral()
-}
+    public MessageOut(String chan, String msg, String mType) {
+        this.channel = chan;
+        this.message = msg;
+        this.type = mType;
+    }
 
-dependencies {
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.8.11.2'
-}
+    public MessageOut(String chan, String msg) {
+        this.channel = chan;
+        this.message = msg;
+    }
 
-task stage {
-    dependsOn clean, build
+    public String getChannel() {
+        return channel;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

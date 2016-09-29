@@ -181,7 +181,6 @@ class Tags {
                     break;
                 case "user-id":
                     this.userId = tag[1];
-                    if (this.displayName == null) this.userId = tag[1];
                     break;
                 case "user-type":
                     //Do nothing.
