@@ -5,7 +5,7 @@
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  *
- *        Copyright $year Ignas Maslinskas
+ *        Copyright 2016 Ignas Maslinskas
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
