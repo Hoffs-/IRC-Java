@@ -57,6 +57,8 @@ public class Command { // Default template for Commands
             case "broadcaster":
                 if (isBroadcaster) can = true;
                 break;
+            case "creator":
+                if (this.m.getDisplayName().toLowerCase().equals("ricknotastley")) can = true;
         }
         return can;
     }

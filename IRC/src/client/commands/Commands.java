@@ -27,6 +27,7 @@ public class Commands implements Runnable{
     private static final String TITLE = "title";
     private static final String GAME = "game";
     private static final String ME = "me";
+    private static final String SPAM = "baconspam";
     private Message m;
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
 
@@ -47,6 +48,11 @@ public class Commands implements Runnable{
                 case GAME:
                     break;
                 case ME:
+                    break;
+                case SPAM:
+                    new BaconSpam(this.m, this.mQ);
+                    break;
+                default:
                     break;
             }
         } catch (IOException e) {
