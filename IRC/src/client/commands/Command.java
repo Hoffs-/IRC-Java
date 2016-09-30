@@ -19,21 +19,54 @@ package client.commands;
 import client.Message;
 import client.MessageOut;
 import client.Settings;
+import client.Tags;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Command { // Default template for Commands
     Settings s = Settings.getSettings();
-    private String user = s.getUser();
-    private String token = s.getToken();
-    private String messageType = "CHAT";
-    private Message m;
-    private LinkedBlockingQueue<MessageOut> mq;
+    protected String user = s.getUser();
+    protected String token = s.getToken();
+    protected String messageType = "CHAT";
+    protected Message m;
+    protected LinkedBlockingQueue<MessageOut> mq;
+    protected String permissionLevel = "user";
 
     public Command(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+        permissionLevel = "user";
         this.m = msg;
         this.mq = mq;
+    }
+
+    protected boolean isAllowed() {
+        Tags curruser = this.m.getMessageTags();
+        boolean can = false;
+        boolean isBroadcaster = false;
+        if (curruser.getDisplayName().toLowerCase().equals(this.m.getChannel().toLowerCase())) isBroadcaster = true;
+        switch (permissionLevel) {
+            case "user":
+                can = true;
+                break;
+            case "subscriber":
+                if (curruser.isSubscriber() || curruser.isMod() || isBroadcaster) can = true;
+                break;
+            case "mod":
+                if (curruser.isMod() || isBroadcaster) can = true;
+                break;
+            case "broadcaster":
+                if (isBroadcaster) can = true;
+                break;
+        }
+        return can;
+    }
+
+    protected void setPermissionLevel(String perm) {
+        this.permissionLevel = perm;
+    }
+
+    protected void setMessageType(String type) {
+        this.messageType = type;
     }
 
 }

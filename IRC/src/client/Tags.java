@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class Tags {
+public class Tags {
     private List<String> emotes = new ArrayList<>();
     private List<String> badges = new ArrayList<>();
 
