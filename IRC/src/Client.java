@@ -56,6 +56,7 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
             poolFixed.stopExecutor();
+            poolCached.stopExecutor();
             try {
                 socketIRC.close();
             } catch (IOException e1) {

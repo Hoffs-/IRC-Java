@@ -105,7 +105,7 @@ public class WriterThread implements Runnable {
         try {
             outputIRC.write(message);
             outputIRC.flush();
-            writerLogger.write(message.substring(0, message.length()-2), "RAW_MESSAGE");
+            writerLogger.write(message.substring(0, message.length()-4), "RAW_MESSAGE");
         } catch (IOException e) {
             e.printStackTrace();
         }
