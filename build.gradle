@@ -29,7 +29,6 @@ sourceSets {
     main {
         java {
             srcDir 'IRC/src/'
-            srcDir '/'
         }
     }
 }
