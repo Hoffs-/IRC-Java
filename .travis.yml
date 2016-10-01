@@ -8,6 +8,7 @@ addons:
       - sshpass
 
 after_success:
+  skip_cleanup: true
   - mkdir build
   - cd ..
   - tar -czf newbuild.tgz *
