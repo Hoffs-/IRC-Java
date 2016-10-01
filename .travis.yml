@@ -6,9 +6,7 @@ addons:
       - sshpass
 
 after_success:
-  - mkdir buildtodeploy
-  - mv * buildtodeploy
-  - tar -czf newbuild.tgz buildtodeploy
+  - tar -czf newbuild.tgz *
   - export SSHPASS=$DEPLOY_PASSWORD
   - sshpass -e scp newbuild.tgz $DEPLOY_USERNAME@$DEPLOY_HOST:$DEPLOY_PATH
 
