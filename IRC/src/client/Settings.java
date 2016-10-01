@@ -84,6 +84,7 @@ public class Settings {
     }
 
     private void writeDefault() throws IOException {
+        this.fo.mkdir();
         FileWriter set = new FileWriter(this.fi);
         JsonParser parser = new JsonParser();
         JsonObject defaultSettings = parser.parse("{\n" +
