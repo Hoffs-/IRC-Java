@@ -26,7 +26,7 @@ public class Creator extends Command{
 
     public Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
-        this.setPermissionLevel("mod");
+        this.setPermissionLevel("creator");
         if (this.isAllowed()) mq.offer(new MessageOut(msg.getChannel(), "My creator and owner is Hoffs!"));
     }
 }
