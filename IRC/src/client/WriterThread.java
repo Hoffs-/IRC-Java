@@ -33,15 +33,17 @@ public class WriterThread implements Runnable {
     private LinkedBlockingQueue<MessageOut> messageQueue = new LinkedBlockingQueue<>();
     private Future future;
     private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
+    private Logger chatLogger;
     private ArrayList<String> channels;
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<MessageOut> queue, ArrayList<String> arr, Future f) {
+    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<MessageOut> queue, ArrayList<String> arr, Future f, Logger ch) {
         this.user = user;
         this.token = token;
         this.irc = c;
         this.messageQueue = queue;
         this.channels = arr;
         this.future = f;
+        this.chatLogger = ch;
     }
 
     @Override
@@ -61,6 +63,7 @@ public class WriterThread implements Runnable {
                 if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
                     else {this.sendMessage(m);}
                 writerLogger.write(m.getMessage(), "SENT");
+                if (!m.getMessage().contains("PONG")) chatLogger.write(String.format("[%s] <%s>: %s", m.getChannel(), this.user, m.getMessage()));
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
