@@ -36,7 +36,7 @@ public class BaconSpam extends Command{
                     i++;
                 }
             } catch (NumberFormatException e) {
-                mq.offer(new MessageOut(msg.getChannel(), msg.getDisplayName() + " Invalid format. (!baconspam <amount> <message>"));
+                mq.offer(new MessageOut(msg.getChannel(), msg.getDisplayName() + " Invalid format. (!baconspam <amount> <message>)"));
             }
         }
     }
