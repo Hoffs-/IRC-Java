@@ -29,6 +29,7 @@ public class Commands implements Runnable{
     private static final String ME = "me";
     private static final String SPAM = "baconspam";
     private static final String BANME = "banme";
+    private static final String TIMEOUTENEMY = "timeoutenemy";
     private Message m;
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
 
@@ -55,6 +56,9 @@ public class Commands implements Runnable{
                     break;
                 case BANME:
                     new BanMe(this.m, this.mQ);
+                    break;
+                case TIMEOUTENEMY:
+                    new TimeoutEnemy(this.m, this.mQ);
                     break;
                 default:
                     break;
