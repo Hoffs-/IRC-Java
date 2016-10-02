@@ -20,6 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -56,9 +57,19 @@ public class WriterThread implements Runnable {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        long RateTime = Instant.now().getEpochSecond();
+        int messageCount = 0;
+        int messageLimit = 30;
         while (!future.isDone() || !messageQueue.isEmpty()) {
             try {
                 MessageOut m = messageQueue.take();
+                messageCount++;
+                if (messageCount > messageLimit && RateTime+30 > Instant.now().getEpochSecond()) {
+                    long timeToSleep = RateTime+30 - Instant.now().getEpochSecond();
+                    Thread.currentThread();
+                    Thread.sleep(timeToSleep*1000);
+                }
+                if (RateTime+30 < Instant.now().getEpochSecond()) {RateTime = Instant.now().getEpochSecond(); messageCount = 0;}
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
                 if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
                     else {this.sendMessage(m);}
