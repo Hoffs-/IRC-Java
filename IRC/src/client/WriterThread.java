@@ -59,15 +59,15 @@ public class WriterThread implements Runnable {
         }
         long RateTime = Instant.now().getEpochSecond();
         int messageCount = 0;
-        int messageLimit = 30;
+        int messageLimit = 60;
         while (!future.isDone() || !messageQueue.isEmpty()) {
             try {
                 MessageOut m = messageQueue.take();
                 messageCount++;
-                if (messageCount > messageLimit && RateTime+30 > Instant.now().getEpochSecond()) {
+                if (messageCount >= messageLimit && RateTime+30 > Instant.now().getEpochSecond()) {
                     long timeToSleep = RateTime+30 - Instant.now().getEpochSecond();
                     Thread.currentThread();
-                    Thread.sleep(timeToSleep*1000);
+                    Thread.sleep((timeToSleep+5)*1000);
                 }
                 if (RateTime+30 < Instant.now().getEpochSecond()) {RateTime = Instant.now().getEpochSecond(); messageCount = 0;}
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
