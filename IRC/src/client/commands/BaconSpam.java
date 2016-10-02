@@ -27,12 +27,16 @@ public class BaconSpam extends Command{
     public BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
         this.setPermissionLevel("creator");
-        int numb = Integer.parseInt(msg.getMessage().split(" ", 3)[1]);
         if (this.isAllowed()) {
-            int i = 0;
-            while (i < numb) {
-                mq.offer(new MessageOut(msg.getChannel(), msg.getMessage().split(" ", 3)[2]));
-                i++;
+            try {
+                int numb = Integer.parseInt(msg.getMessage().split(" ", 3)[1]);
+                int i = 0;
+                while (i < numb) {
+                    mq.offer(new MessageOut(msg.getChannel(), msg.getMessage().split(" ", 3)[2]));
+                    i++;
+                }
+            } catch (NumberFormatException e) {
+                mq.offer(new MessageOut(msg.getChannel(), msg.getDisplayName() + " Invalid format. (!baconspam <amount> <message>"));
             }
         }
     }
