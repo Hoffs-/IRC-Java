@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package client;
+package client.utils;
 
 public class MessageOut {
     private String channel = null;

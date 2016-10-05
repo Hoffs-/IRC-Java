@@ -16,8 +16,8 @@
 
 package client.commands;
 
-import client.Message;
-import client.MessageOut;
+import client.utils.Message;
+import client.utils.MessageOut;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,8 +46,8 @@ public class Commands implements Runnable{
                     new Creator(this.m, this.mQ);
                     break;
                 case TITLE:
-                    break;
                 case GAME:
+                    new TwitchAPICommands(this.m, this.mQ);
                     break;
                 case ME:
                     break;

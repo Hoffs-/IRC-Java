@@ -15,6 +15,10 @@
  */
 
 import client.*;
+import client.utils.Logger;
+import client.utils.Message;
+import client.utils.MessageOut;
+import client.utils.Settings;
 
 import java.io.IOException;
 import java.net.Socket;

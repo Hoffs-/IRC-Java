@@ -17,6 +17,9 @@
 package client;
 
 import client.commands.Commands;
+import client.utils.Logger;
+import client.utils.Message;
+import client.utils.MessageOut;
 
 import java.io.IOException;
 import java.util.Objects;

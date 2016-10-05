@@ -16,6 +16,9 @@
 
 package client;
 
+import client.utils.Logger;
+import client.utils.MessageOut;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -73,7 +76,8 @@ public class WriterThread implements Runnable {
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
                 if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
                     else {this.sendMessage(m);}
-                writerLogger.write(m.getMessage(), "SENT");
+                if (m.getType().equals("RAW")) writerLogger.write(m.getMessage().substring(0, m.getMessage().length()-4), "SENT");
+                    else writerLogger.write(m.getMessage(), "SENT");
                 if (!m.getMessage().contains("PONG")) chatLogger.write(String.format("[%s] <%s>: %s", m.getChannel(), this.user, m.getMessage()));
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();

@@ -16,8 +16,8 @@
 
 package client.commands;
 
-import client.Message;
-import client.MessageOut;
+import client.utils.Message;
+import client.utils.MessageOut;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;

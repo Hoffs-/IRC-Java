@@ -16,10 +16,10 @@
 
 package client.commands;
 
-import client.Message;
-import client.MessageOut;
-import client.Settings;
-import client.Tags;
+import client.utils.Message;
+import client.utils.MessageOut;
+import client.utils.Settings;
+import client.utils.Tags;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
