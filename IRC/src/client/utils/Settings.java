@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package client;
+package client.utils;
 
 
 import com.google.gson.JsonArray;
@@ -34,6 +34,8 @@ public class Settings {
     private JsonObject settings;
     private String user;
     private String token;
+    private String clientid;
+    private String oauth;
     private ArrayList<String> channels = new ArrayList<>();
 
     private Settings() throws IOException {
@@ -55,6 +57,14 @@ public class Settings {
         return this.token;
     }
 
+    public synchronized String getClientid() {
+        return this.clientid;
+    }
+
+    public synchronized String getOauth() {
+        return this.oauth;
+    }
+
     public synchronized ArrayList<String> getChannels() {
         return this.channels;
     }
@@ -72,6 +82,8 @@ public class Settings {
         } else {
             this.user = this.settings.get("username").getAsString();
             this.token = this.settings.get("token").getAsString();
+            this.clientid = this.settings.get("clientid").getAsString();
+            this.oauth = this.settings.get("oauth").getAsString();
             JsonArray arr = this.settings.get("channels").getAsJsonArray();
             for (JsonElement chan : arr) {
                 channels.add(chan.getAsString());

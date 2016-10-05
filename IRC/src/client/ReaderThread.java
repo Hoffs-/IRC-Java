@@ -16,6 +16,9 @@
 
 package client;
 
+import client.utils.Logger;
+import client.utils.Message;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
