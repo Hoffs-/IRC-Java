@@ -105,7 +105,7 @@ public class TwitchAPI extends HTTPClient {
 
     public boolean isLive(String channel) {
         JsonObject js = this.GET("https://api.twitch.tv/kraken/streams/" + channel);
-        return js.get("stream") != null;
+        return (js.get("stream") != null);
     }
 
     private HttpURLConnection setupConn(String url) {
