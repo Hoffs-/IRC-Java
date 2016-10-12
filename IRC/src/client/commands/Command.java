@@ -24,46 +24,61 @@ import client.utils.Tags;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Command { // Default template for Commands
-    Settings s = Settings.getSettings();
-    protected String user = s.getUser();
-    protected String token = s.getToken();
-    protected String messageType = "CHAT";
+abstract class Command implements Runnable { // Default template for Commands
+    Settings s;
+    protected String user;
+    private String token;
+    private String messageType = "CHAT";
     protected Message m;
-    protected LinkedBlockingQueue<MessageOut> mq;
-    protected String permissionLevel = "user";
+    LinkedBlockingQueue<MessageOut> mq;
+    private String permissionLevel = "user";
 
-    public Command(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    Command() throws IOException {
+        permissionLevel = "user";
+        this.s = Settings.getSettings();
+        user = s.getUser();
+        token = s.getToken();
+    }
+
+    Command(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         permissionLevel = "user";
         this.m = msg;
         this.mq = mq;
+        this.s = Settings.getSettings();
+        user = s.getUser();
+        token = s.getToken();
     }
 
-    protected boolean isAllowed() {
+    boolean isAllowed() {
         Tags curruser = this.m.getMessageTags();
         boolean can = false;
         boolean isBroadcaster = false;
-        if (curruser.getDisplayName().toLowerCase().equals(this.m.getChannel().toLowerCase())) isBroadcaster = true;
+        if (curruser.getUserId().toLowerCase().equals(this.m.getChannel().toLowerCase())) isBroadcaster = true;
         switch (permissionLevel) {
             case "user":
                 can = true;
                 break;
             case "subscriber":
                 if (curruser.isSubscriber() || curruser.isMod() || isBroadcaster) can = true;
+                if (this.m.getDisplayName().toLowerCase().equals("ricknotastley")) can = true;
                 break;
             case "mod":
                 if (curruser.isMod() || isBroadcaster) can = true;
+                if (this.m.getDisplayName().toLowerCase().equals("ricknotastley")) can = true;
                 break;
             case "broadcaster":
                 if (isBroadcaster) can = true;
+                if (this.m.getDisplayName().toLowerCase().equals("ricknotastley")) can = true;
                 break;
             case "creator":
                 if (this.m.getDisplayName().toLowerCase().equals("ricknotastley")) can = true;
+            default:
+                break;
         }
         return can;
     }
 
-    protected void setPermissionLevel(String perm) {
+    void setPermissionLevel(String perm) {
         this.permissionLevel = perm;
     }
 
@@ -71,4 +86,8 @@ public class Command { // Default template for Commands
         this.messageType = type;
     }
 
+    @Override
+    public void run() {
+
+    }
 }

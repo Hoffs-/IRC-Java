@@ -22,16 +22,16 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TimeoutEnemy extends Command{
+class TimeoutEnemy extends Command{
 
-    public TimeoutEnemy(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    TimeoutEnemy(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
         this.setPermissionLevel("user");
         if (this.isAllowed()) {
-            mq.offer(new MessageOut(msg.getChannel(), "/timeout " + msg.getDisplayName() + " 360 Sacrifice had to be made."));
+            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 360 Sacrifice had to be made.", msg.getDisplayName())));
             String[] arrS = msg.getMessage().split(" ", 3);
             if (arrS[1].startsWith("@")) arrS[1] = arrS[1].substring(1);
-            mq.offer(new MessageOut(msg.getChannel(), "/timeout " + arrS[1] + " 90 You have an enemy."));
+            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 90 You have an enemy.", arrS[1])));
         }
     }
 }

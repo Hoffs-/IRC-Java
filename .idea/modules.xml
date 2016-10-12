@@ -4,8 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IRC/IRC.iml" filepath="$PROJECT_DIR$/IRC/IRC.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/IRC-Java.iml" filepath="$PROJECT_DIR$/.idea/modules/IRC-Java.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IRC-Java_main.iml" filepath="$PROJECT_DIR$/.idea/modules/IRC-Java_main.iml" group="IRC-Java" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IRC-Java_test.iml" filepath="$PROJECT_DIR$/.idea/modules/IRC-Java_test.iml" group="IRC-Java" />
     </modules>
   </component>
 </project>

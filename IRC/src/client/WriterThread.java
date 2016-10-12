@@ -67,12 +67,12 @@ public class WriterThread implements Runnable {
             try {
                 MessageOut m = messageQueue.take();
                 messageCount++;
-                if (messageCount >= messageLimit && RateTime+30 > Instant.now().getEpochSecond()) {
-                    long timeToSleep = RateTime+30 - Instant.now().getEpochSecond();
+                if (messageCount >= messageLimit && RateTime+40 > Instant.now().getEpochSecond()) {
+                    long timeToSleep = RateTime+40 - Instant.now().getEpochSecond();
                     Thread.currentThread();
                     Thread.sleep((timeToSleep+5)*1000);
                 }
-                if (RateTime+30 < Instant.now().getEpochSecond()) {RateTime = Instant.now().getEpochSecond(); messageCount = 0;}
+                if (RateTime+40 < Instant.now().getEpochSecond()) {RateTime = Instant.now().getEpochSecond(); messageCount = 0;}
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
                 if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
                     else {this.sendMessage(m);}
@@ -98,7 +98,7 @@ public class WriterThread implements Runnable {
         }
     }
 
-    public void join(String channel) {
+    private void join(String channel) {
         try {
             outputIRC.write("JOIN #" + channel + "\r\n");
             outputIRC.flush();
