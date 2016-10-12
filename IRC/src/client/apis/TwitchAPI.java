@@ -24,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Objects;
 
 public class TwitchAPI extends HTTPClient {
     private String id = null;
@@ -105,7 +106,7 @@ public class TwitchAPI extends HTTPClient {
 
     public boolean isLive(String channel) {
         JsonObject js = this.GET("https://api.twitch.tv/kraken/streams/" + channel);
-        return (js.get("stream") != null);
+        return (!Objects.equals(js.get("stream").toString(), "null"));
     }
 
     private HttpURLConnection setupConn(String url) {
