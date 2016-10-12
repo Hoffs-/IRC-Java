@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package client;
+package client.utils;
 
 public class Message {
     private String raw = null;
@@ -29,7 +29,7 @@ public class Message {
     private String message = null;
     private String user = null;
 
-    Message(String m) {
+    public Message(String m) {
         this.raw = m;
         parseMessage();
     }

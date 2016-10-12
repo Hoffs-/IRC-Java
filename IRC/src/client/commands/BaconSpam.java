@@ -22,15 +22,22 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Creator extends Command{
+public class BaconSpam extends Command{
 
-    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    public BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
         this.setPermissionLevel("creator");
-    }
-
-    @Override
-    public void run() {
-        if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
+        if (this.isAllowed()) {
+            try {
+                int numb = Integer.parseInt(msg.getMessage().split(" ", 3)[1]);
+                int i = 0;
+                while (i < numb) {
+                    mq.offer(new MessageOut(msg.getChannel(), msg.getMessage().split(" ", 3)[2]));
+                    i++;
+                }
+            } catch (NumberFormatException e) {
+                mq.offer(new MessageOut(msg.getChannel(), msg.getDisplayName() + " Invalid format. (!baconspam <amount> <message>)"));
+            }
+        }
     }
 }

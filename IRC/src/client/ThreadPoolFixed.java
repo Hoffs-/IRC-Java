@@ -16,6 +16,8 @@
 
 package client;
 
+import client.utils.Logger;
+
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;

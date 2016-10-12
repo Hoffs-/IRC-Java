@@ -22,15 +22,17 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Creator extends Command{
+class TimeoutEnemy extends Command{
 
-    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    TimeoutEnemy(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
-        this.setPermissionLevel("creator");
-    }
-
-    @Override
-    public void run() {
-        if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
+        this.setPermissionLevel("user");
+        if (this.isAllowed()) {
+            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 360 Sacrifice had to be made.", msg.getDisplayName())));
+            String[] arrS = msg.getMessage().split(" ", 3);
+            if (arrS[1].startsWith("@")) arrS[1] = arrS[1].substring(1);
+            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 90 You have an enemy.", arrS[1])));
+        }
     }
 }
+

@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
-import client.Logger;
 import client.ThreadPoolCached;
 import client.ThreadPoolFixed;
+import client.utils.Logger;
 
 public class Main {
 

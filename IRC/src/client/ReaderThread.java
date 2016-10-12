@@ -16,6 +16,9 @@
 
 package client;
 
+import client.utils.Logger;
+import client.utils.Message;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,14 +26,15 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReaderThread implements Runnable {
-    private Logger chatLogger = new Logger("CHAT_LOG", "CHAT");
+    private Logger chatLogger;
     private Socket irc;
     private Logger rawLogger = new Logger("RAW_READER_LOG", "RAW");
     private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>();
 
-    public ReaderThread(Socket c, LinkedBlockingQueue<Message> queue) {
+    public ReaderThread(Socket c, LinkedBlockingQueue<Message> queue, Logger ch) {
         this.irc = c;
         this.messageQueue = queue;
+        this.chatLogger = ch;
     }
 
     @Override

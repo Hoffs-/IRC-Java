@@ -15,6 +15,10 @@
  */
 
 import client.*;
+import client.utils.Logger;
+import client.utils.Message;
+import client.utils.MessageOut;
+import client.utils.Settings;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -33,6 +37,7 @@ public class Client {
     private LinkedBlockingQueue<Message> messageQueueIn = new LinkedBlockingQueue<>();
     private LinkedBlockingQueue<MessageOut> messageQueueOut = new LinkedBlockingQueue<>();
     private Settings settings;
+    private Logger chatLogger = new Logger("CHAT_LOG", "CHAT");
 
     public Client(String ip, ThreadPoolFixed pool, ThreadPoolCached poolC) {
         this.ircIp = ip;
@@ -45,9 +50,9 @@ public class Client {
             settings = Settings.getSettings();
             Future m;
             socketIRC = new Socket(ircIp, 6667);
-            ircReader = new ReaderThread(socketIRC, messageQueueIn);
+            ircReader = new ReaderThread(socketIRC, messageQueueIn, chatLogger);
             m = poolFixed.startThread(ircReader);
-            ircWriter = new WriterThread(settings.getUser(), settings.getToken(), socketIRC, messageQueueOut, settings.getChannels(), m);
+            ircWriter = new WriterThread(settings.getUser(), settings.getToken(), socketIRC, messageQueueOut, settings.getChannels(), m, chatLogger);
             ircProccesing = new ProcessingThread(messageQueueIn, messageQueueOut, m, poolCached);
             ircInput = new InputThread(messageQueueOut, m);
             poolFixed.startThread(ircWriter);
@@ -56,6 +61,7 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
             poolFixed.stopExecutor();
+            poolCached.stopExecutor();
             try {
                 socketIRC.close();
             } catch (IOException e1) {

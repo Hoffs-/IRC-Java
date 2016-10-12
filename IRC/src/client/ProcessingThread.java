@@ -16,12 +16,16 @@
 
 package client;
 
+import client.commands.AutoPoints;
 import client.commands.Commands;
+import client.utils.Logger;
+import client.utils.Message;
+import client.utils.MessageOut;
+import client.utils.Settings;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 public class ProcessingThread implements Runnable{
 
@@ -29,6 +33,7 @@ public class ProcessingThread implements Runnable{
     private LinkedBlockingQueue<MessageOut> messageQueueOut = new LinkedBlockingQueue<>();
     private Future ircFuture;
     private ThreadPoolCached poolCached;
+    private Commands commands;
     private Logger processingLogger = new Logger("PROCESSING_LOG", "PROCESSING_THREAD");
 
     public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<MessageOut> n, Future k, ThreadPoolCached th) throws IOException {
@@ -36,10 +41,18 @@ public class ProcessingThread implements Runnable{
         this.messageQueueOut = n;
         this.ircFuture = k;
         this.poolCached = th;
+        this.commands = new Commands();
     }
 
     @Override
     public void run() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        try {
+            Runnable pts = new AutoPoints();
+            scheduledExecutorService.scheduleAtFixedRate(pts, 0, Settings.getSettings().getInterval(), TimeUnit.MINUTES);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         while (!ircFuture.isDone()) {
             try {
                 Message m = messageQueueIn.take();
@@ -49,8 +62,8 @@ public class ProcessingThread implements Runnable{
                     messageQueueOut.offer(out);
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
-                    Commands k = new Commands(m, messageQueueOut);
-                    poolCached.startThread(k);
+                    Runnable run = commands.getCommand(m, messageQueueOut);
+                    if (run != null) poolCached.startThread(run);
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();

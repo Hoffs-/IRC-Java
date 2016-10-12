@@ -16,10 +16,14 @@
 
 package client;
 
+import client.utils.Logger;
+import client.utils.MessageOut;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,15 +37,17 @@ public class WriterThread implements Runnable {
     private LinkedBlockingQueue<MessageOut> messageQueue = new LinkedBlockingQueue<>();
     private Future future;
     private Logger writerLogger = new Logger("WRITER_LOG", "WRITER_THREAD");
+    private Logger chatLogger;
     private ArrayList<String> channels;
 
-    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<MessageOut> queue, ArrayList<String> arr, Future f) {
+    public WriterThread(String user, String token, Socket c, LinkedBlockingQueue<MessageOut> queue, ArrayList<String> arr, Future f, Logger ch) {
         this.user = user;
         this.token = token;
         this.irc = c;
         this.messageQueue = queue;
         this.channels = arr;
         this.future = f;
+        this.chatLogger = ch;
     }
 
     @Override
@@ -54,13 +60,25 @@ public class WriterThread implements Runnable {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        long RateTime = Instant.now().getEpochSecond();
+        int messageCount = 0;
+        int messageLimit = 60;
         while (!future.isDone() || !messageQueue.isEmpty()) {
             try {
                 MessageOut m = messageQueue.take();
+                messageCount++;
+                if (messageCount >= messageLimit && RateTime+40 > Instant.now().getEpochSecond()) {
+                    long timeToSleep = RateTime+40 - Instant.now().getEpochSecond();
+                    Thread.currentThread();
+                    Thread.sleep((timeToSleep+5)*1000);
+                }
+                if (RateTime+40 < Instant.now().getEpochSecond()) {RateTime = Instant.now().getEpochSecond(); messageCount = 0;}
                 writerLogger.write(m + " | LEFT IN QUEUE: " + messageQueue.size(), "RECEIVED");
                 if (m.getType().equals("RAW")) this.sendRaw(m.getMessage());
                     else {this.sendMessage(m);}
-                writerLogger.write(m.getMessage(), "SENT");
+                if (m.getType().equals("RAW")) writerLogger.write(m.getMessage().substring(0, m.getMessage().length()-4), "SENT");
+                    else writerLogger.write(m.getMessage(), "SENT");
+                if (!m.getMessage().contains("PONG")) chatLogger.write(String.format("[%s] <%s>: %s", m.getChannel(), this.user, m.getMessage()));
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
@@ -80,7 +98,7 @@ public class WriterThread implements Runnable {
         }
     }
 
-    public void join(String channel) {
+    private void join(String channel) {
         try {
             outputIRC.write("JOIN #" + channel + "\r\n");
             outputIRC.flush();
@@ -105,7 +123,7 @@ public class WriterThread implements Runnable {
         try {
             outputIRC.write(message);
             outputIRC.flush();
-            writerLogger.write(message.substring(0, message.length()-2), "RAW_MESSAGE");
+            writerLogger.write(message.substring(0, message.length()-4), "RAW_MESSAGE");
         } catch (IOException e) {
             e.printStackTrace();
         }

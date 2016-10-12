@@ -22,15 +22,12 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Creator extends Command{
+public class BanMe extends Command{
 
-    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    public BanMe(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
-        this.setPermissionLevel("creator");
-    }
-
-    @Override
-    public void run() {
-        if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
+        this.setPermissionLevel("user");
+        if (this.isAllowed()) mq.offer(new MessageOut(msg.getChannel(), "/ban " + msg.getDisplayName()));
     }
 }
+

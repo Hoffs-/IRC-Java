@@ -16,41 +16,73 @@
 
 package client.commands;
 
-import client.Message;
-import client.MessageOut;
+import client.utils.Message;
+import client.utils.MessageOut;
+import client.utils.Settings;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Commands implements Runnable{
+public class Commands {
     private static final String CREATOR = "creator";
     private static final String TITLE = "title";
     private static final String GAME = "game";
-    private static final String ME = "me";
+    private static final String SPAM = "baconspam";
+    private static final String BANME = "banme";
+    private static final String TIMEOUTENEMY = "timeoutenemy";
+    private static final String POINTS = "points";
     private Message m;
+    private Map<String, String> commands = new HashMap<>();
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
 
-    public Commands(Message msg, LinkedBlockingQueue<MessageOut> mm) {
-        this.m = msg;
-        this.mQ = mm;
+    public Commands() {
+        this.InitializeLocalized();
     }
 
-    @Override
-    public void run() {
+    private void InitializeLocalized() {
         try {
-            switch (this.m.getMessage().split(" ", 2)[0].substring(1)) {
-                case CREATOR:
-                    new Creator(this.m, this.mQ);
-                    break;
-                case TITLE:
-                    break;
-                case GAME:
-                    break;
-                case ME:
-                    break;
+            Map<String, String> commandsLocalized = Settings.getSettings().getLocalized("Commands");
+            commands.put(commandsLocalized.get("points"), "points");
+            commands.put(commandsLocalized.get("creator"), "creator");
+            commands.put(commandsLocalized.get("title"), "title");
+            commands.put(commandsLocalized.get("game"), "game");
+            commands.put(commandsLocalized.get("banme"), "banme");
+            commands.put(commandsLocalized.get("timeoutenemy"), "timeoutenemy");
+            commands.put(commandsLocalized.get("baconspam"), "baconspam");
+            commands.put(commandsLocalized.get("points"), "points");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Runnable getCommand(Message m, LinkedBlockingQueue<MessageOut> mq) {
+        this.m = m;
+        this.mQ = mq;
+        try {
+            if (commands.containsKey(this.m.getMessage().split(" ", 2)[0])) {
+                switch (commands.get(this.m.getMessage().split(" ", 2)[0])) { // Change to IF with localized names
+                    case CREATOR:
+                        return new Creator(this.m, this.mQ);//
+                    case TITLE:
+                    case GAME:
+                        return new TwitchAPICommands(this.m, this.mQ);
+                    case SPAM:
+                        return new BaconSpam(this.m, this.mQ);//
+                    case BANME:
+                        return new AutoPoints(this.m, this.mQ);//
+                    case TIMEOUTENEMY:
+                        return new TimeoutEnemy(this.m, this.mQ);//
+                    case POINTS:
+                        return new Points(this.m, this.mQ);//
+                    default:
+                        break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

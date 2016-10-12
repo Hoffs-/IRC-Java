@@ -14,23 +14,25 @@
  *    limitations under the License.
  */
 
-package client.commands;
+package client.utils;
 
-import client.utils.Message;
-import client.utils.MessageOut;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import java.io.IOException;
-import java.util.concurrent.LinkedBlockingQueue;
 
-class Creator extends Command{
+public abstract class HTTPClient {
+    protected JsonParser parser = new JsonParser();
+    protected JsonObject json = new JsonObject();
+    protected StringBuilder result = new StringBuilder();
 
-    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
-        this.setPermissionLevel("creator");
+    protected HTTPClient() {
     }
 
-    @Override
-    public void run() {
-        if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
-    }
+    public abstract JsonObject GET(String url);
+
+    public abstract JsonObject PUT(String url, String body);
+
+    public abstract JsonObject DELETE(String url);
+
+    public abstract JsonObject POST(String url, String body);
 }
