@@ -19,6 +19,7 @@ package client;
 import client.utils.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +35,9 @@ public class ThreadPoolCached {
             60L, TimeUnit.SECONDS,
             new SynchronousQueue<>());
 
-    public void startThread(Runnable Thread) throws IOException {
+    public Future startThread(Runnable Thread) throws IOException {
         poolLogger.write("Starting thread for " + Thread.toString() + ", active threads: " + this.getUsedThreads(), "CACHED");
-        executor.execute(Thread);
+        return executor.submit(Thread);
     }
 
     public void stopExecutor() {

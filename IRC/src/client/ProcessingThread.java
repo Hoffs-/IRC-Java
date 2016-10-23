@@ -24,6 +24,8 @@ import client.utils.MessageOut;
 import client.utils.Settings;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 
@@ -35,6 +37,7 @@ public class ProcessingThread implements Runnable{
     private ThreadPoolCached poolCached;
     private Commands commands;
     private Logger processingLogger = new Logger("PROCESSING_LOG", "PROCESSING_THREAD");
+    private Map<String, LinkedBlockingQueue<Message>> queueMap = new HashMap<>();
 
     public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<MessageOut> n, Future k, ThreadPoolCached th) throws IOException {
         this.messageQueueIn = m;
@@ -42,6 +45,7 @@ public class ProcessingThread implements Runnable{
         this.ircFuture = k;
         this.poolCached = th;
         this.commands = new Commands();
+        this.initializeQueues();
     }
 
     @Override
@@ -53,6 +57,7 @@ public class ProcessingThread implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Future raceFuture = null;
         while (!ircFuture.isDone()) {
             try {
                 Message m = messageQueueIn.take();
@@ -62,13 +67,33 @@ public class ProcessingThread implements Runnable{
                     messageQueueOut.offer(out);
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
-                    Runnable run = commands.getCommand(m, messageQueueOut);
-                    if (run != null) poolCached.startThread(run);
+                    if (m.getMessage().startsWith("!race")) {
+                        queueMap.get("raceQueue").offer(m);
+                    }
+                    Runnable run = commands.getCommand(m, messageQueueOut, queueMap);
+                    System.out.println("Is raceFuture null = " + (raceFuture == null));
+                    if (raceFuture != null) System.out.println("Is raceFuture done = " + raceFuture.isDone());
+                    if (run != null) {
+                        boolean canCreateRaceThread = true;
+                        if (raceFuture != null) {
+                            if (!raceFuture.isDone()) canCreateRaceThread = false;
+                        }
+
+                        if (Objects.equals(run.toString(), "racegame") && canCreateRaceThread && m.getMessage().startsWith("!race prepare")) {
+                            raceFuture = poolCached.startThread(run);
+                        } else if (run.toString() != "racegame") {
+                            poolCached.startThread(run);
+                        }
+                    }
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void initializeQueues() {
+        queueMap.put("raceQueue", new LinkedBlockingQueue<Message>());
     }
 
     public String toString(){

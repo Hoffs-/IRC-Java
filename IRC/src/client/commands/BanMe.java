@@ -22,7 +22,7 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class BanMe extends Command{
+class BanMe extends Command{
 
     public BanMe(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);

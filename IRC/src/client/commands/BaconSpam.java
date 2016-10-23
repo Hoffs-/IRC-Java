@@ -22,9 +22,9 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class BaconSpam extends Command{
+class BaconSpam extends Command{
 
-    public BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
         this.setPermissionLevel("creator");
         if (this.isAllowed()) {

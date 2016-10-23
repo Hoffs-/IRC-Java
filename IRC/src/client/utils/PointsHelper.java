@@ -56,7 +56,7 @@ public class PointsHelper {
 
     public int RemovePoints(String user, int amount, String table) {
         sqLiteHelper = new SQLiteHelper();
-        sqLiteHelper.checkTable(table);
+        sqLiteHelper.checkTable(table.toLowerCase());
         String query = "SET points = points - " + amount +
                 " WHERE user = '" + user.toLowerCase() + "'";
         return sqLiteHelper.sqlUpdate(table, query);

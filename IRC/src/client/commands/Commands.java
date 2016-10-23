@@ -36,6 +36,7 @@ public class Commands {
     private Message m;
     private Map<String, String> commands = new HashMap<>();
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
+    private Map<String, LinkedBlockingQueue<Message>> queueMap = new HashMap<>();
 
     public Commands() {
         this.InitializeLocalized();
@@ -52,16 +53,19 @@ public class Commands {
             commands.put(commandsLocalized.get("timeoutenemy"), "timeoutenemy");
             commands.put(commandsLocalized.get("baconspam"), "baconspam");
             commands.put(commandsLocalized.get("points"), "points");
+            commands.put("!race", "race");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Runnable getCommand(Message m, LinkedBlockingQueue<MessageOut> mq) {
+    public Runnable getCommand(Message m, LinkedBlockingQueue<MessageOut> mq, Map<String, LinkedBlockingQueue<Message>> mpq) {
         this.m = m;
         this.mQ = mq;
+        this.queueMap = mpq;
         try {
             if (commands.containsKey(this.m.getMessage().split(" ", 2)[0])) {
+                //System.out.println(commands.get(this.m.getMessage().split(" ", 2)[0]));
                 switch (commands.get(this.m.getMessage().split(" ", 2)[0])) { // Change to IF with localized names
                     case CREATOR:
                         return new Creator(this.m, this.mQ);//
@@ -76,6 +80,8 @@ public class Commands {
                         return new TimeoutEnemy(this.m, this.mQ);//
                     case POINTS:
                         return new Points(this.m, this.mQ);//
+                    case "race":
+                        return new RaceGame(this.m, this.mQ, this.queueMap);
                     default:
                         break;
                 }
