@@ -29,5 +29,9 @@ class BanMe extends Command{
         this.setPermissionLevel("user");
         if (this.isAllowed()) mq.offer(new MessageOut(msg.getChannel(), "/ban " + msg.getDisplayName()));
     }
+
+    public String toString() {
+        return "BanMe";
+    }
 }
 

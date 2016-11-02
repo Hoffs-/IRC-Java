@@ -67,24 +67,21 @@ public class ProcessingThread implements Runnable{
                     messageQueueOut.offer(out);
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
-                    if (m.getMessage().startsWith("!race")) {
-                        queueMap.get("raceQueue").offer(m);
-                    }
                     Runnable run = commands.getCommand(m, messageQueueOut, queueMap);
-                    System.out.println("Is raceFuture null = " + (raceFuture == null));
-                    if (raceFuture != null) System.out.println("Is raceFuture done = " + raceFuture.isDone());
                     if (run != null) {
-                        boolean canCreateRaceThread = true;
-                        if (raceFuture != null) {
-                            if (!raceFuture.isDone()) canCreateRaceThread = false;
+                        boolean canCreateRaceThread = false;
+                        if (Objects.equals(run.toString(), "racegame")) {
+                            if (raceFuture == null) canCreateRaceThread = true;
+                            else if (raceFuture.isDone()) canCreateRaceThread = true;
                         }
-
                         if (Objects.equals(run.toString(), "racegame") && canCreateRaceThread && m.getMessage().startsWith("!race prepare")) {
+                            queueMap.get("raceQueue").clear();
                             raceFuture = poolCached.startThread(run);
-                        } else if (run.toString() != "racegame") {
+                        } else if (!Objects.equals(run.toString(), "racegame")) {
                             poolCached.startThread(run);
                         }
                     }
+                    if (raceFuture != null) {if (m.getMessage().startsWith("!race") && !raceFuture.isDone()) {queueMap.get("raceQueue").offer(m);}}
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();

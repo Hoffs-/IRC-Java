@@ -33,4 +33,8 @@ class Creator extends Command{
     public void run() {
         if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
     }
+
+    public String toString() {
+        return "Creator";
+    }
 }

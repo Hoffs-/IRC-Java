@@ -52,5 +52,9 @@ class TwitchAPICommands extends Command {
             }
         }
     }
+
+    public String toString() {
+        return "TwitchAPI";
+    }
 }
 

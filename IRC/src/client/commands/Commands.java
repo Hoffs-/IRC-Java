@@ -91,4 +91,8 @@ public class Commands {
         }
         return null;
     }
+
+    public String toString() {
+        return "CommandsFactory";
+    }
 }

@@ -34,5 +34,9 @@ class TimeoutEnemy extends Command{
             mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 90 You have an enemy.", arrS[1])));
         }
     }
+
+    public String toString() {
+        return "TimeoutEnemy";
+    }
 }
 

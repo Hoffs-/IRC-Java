@@ -75,4 +75,7 @@ public class AutoPoints extends Command {
         }
     }
 
+    public String toString() {
+        return "AutoPoints";
+    }
 }

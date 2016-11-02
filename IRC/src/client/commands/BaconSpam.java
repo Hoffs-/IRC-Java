@@ -40,4 +40,8 @@ class BaconSpam extends Command{
             }
         }
     }
+
+    public String toString() {
+        return "BaconSpam";
+    }
 }

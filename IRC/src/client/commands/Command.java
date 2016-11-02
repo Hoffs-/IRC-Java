@@ -90,4 +90,6 @@ abstract class Command implements Runnable { // Default template for Commands
     public void run() {
 
     }
+
+
 }

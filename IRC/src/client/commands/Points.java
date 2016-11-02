@@ -138,4 +138,8 @@ class Points extends Command implements Runnable {
             }
         }
     }
+
+    public String toString() {
+        return "Points";
+    }
 }
