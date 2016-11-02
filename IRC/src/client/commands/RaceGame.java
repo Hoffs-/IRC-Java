@@ -58,7 +58,7 @@ class RaceGame extends Command implements Runnable {
                     } else if (messageIndices[1].startsWith(Settings.getSettings().getLocalized("Race").get("command_join"))) {
                         setPermissionLevel(Settings.getSettings().getLocalized("Race").get("permission_join"));
                         if (isAllowed() && this.isStarted) this.joinRace();
-                    } else if (messageIndices[1].startsWith("info")) {
+                    } else if (messageIndices[1].startsWith("debug")) {
                         mq.offer(new MessageOut(m.getChannel(), "Race info: Players = " + players.size() + ", Join price = " + this.joinPrice + ", Price pool = " + this.prizepool + ". isStarted = " + this.isStarted));
                     } else if (messageIndices[1].startsWith("stop")) {
                         this.isStarted = false;
