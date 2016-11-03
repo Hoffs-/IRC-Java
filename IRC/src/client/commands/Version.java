@@ -22,13 +22,18 @@ import client.utils.MessageOut;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Version extends Command{
+class Version extends Command{
     Version(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
     }
 
     @Override
     public void run() {
-        this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.2"));
+        this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.3"));
+    }
+
+    @Override
+    public String toString() {
+        return "Version";
     }
 }

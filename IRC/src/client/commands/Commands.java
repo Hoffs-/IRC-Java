@@ -33,7 +33,9 @@ public class Commands {
     private static final String BANME = "banme";
     private static final String TIMEOUTENEMY = "timeoutenemy";
     private static final String POINTS = "points";
+    private static final String RACE = "race";
     private static final String VERSION = "version";
+    private static final String GAMBLE = "gamble";
     private Message m;
     private Map<String, String> commands = new HashMap<>();
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
@@ -55,6 +57,7 @@ public class Commands {
             commands.put(commandsLocalized.get("baconspam"), "baconspam");
             commands.put(commandsLocalized.get("points"), "points");
             commands.put(commandsLocalized.get("race"), "race");
+            commands.put(commandsLocalized.get("gamble"), "gamble");
             commands.put("!version", "version");
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,10 +85,12 @@ public class Commands {
                         return new TimeoutEnemy(this.m, this.mQ);//
                     case POINTS:
                         return new Points(this.m, this.mQ);//
-                    case "race":
+                    case RACE:
                         return new RaceGame(this.m, this.mQ, this.queueMap);
                     case VERSION:
                         return new Version(this.m, this.mQ);
+                    case GAMBLE:
+                        return new Gamble(this.m, this.mQ);
                     default:
                         break;
                 }
