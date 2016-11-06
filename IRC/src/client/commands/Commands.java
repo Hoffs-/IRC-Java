@@ -40,6 +40,7 @@ public class Commands {
     private Map<String, String> commands = new HashMap<>();
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
     private Map<String, LinkedBlockingQueue<Message>> queueMap = new HashMap<>();
+    private Map<String, Map<String, Long>> cooldownMap = new HashMap<>();
 
     public Commands() {
         this.InitializeLocalized();
@@ -64,10 +65,11 @@ public class Commands {
         }
     }
 
-    public Runnable getCommand(Message m, LinkedBlockingQueue<MessageOut> mq, Map<String, LinkedBlockingQueue<Message>> mpq) {
+    public Runnable getCommand(Message m, LinkedBlockingQueue<MessageOut> mq, Map<String, LinkedBlockingQueue<Message>> mpq, Map<String, Map<String, Long>> cd) {
         this.m = m;
         this.mQ = mq;
         this.queueMap = mpq;
+        this.cooldownMap = cd;
         try {
             if (commands.containsKey(this.m.getMessage().split(" ", 2)[0])) {
                 //System.out.println(commands.get(this.m.getMessage().split(" ", 2)[0]));
@@ -86,11 +88,11 @@ public class Commands {
                     case POINTS:
                         return new Points(this.m, this.mQ);//
                     case RACE:
-                        return new RaceGame(this.m, this.mQ, this.queueMap);
+                        return new RaceGame(this.m, this.mQ, this.queueMap.get("raceQueue"));
                     case VERSION:
                         return new Version(this.m, this.mQ);
                     case GAMBLE:
-                        return new Gamble(this.m, this.mQ);
+                        return new Gamble(this.m, this.mQ, this.cooldownMap.get("gamble"));
                     default:
                         break;
                 }

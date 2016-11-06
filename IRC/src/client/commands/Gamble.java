@@ -22,17 +22,23 @@ import client.utils.PointsHelper;
 import client.utils.Settings;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class Gamble extends Command {
-    Gamble(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    private Map<String, Long> cooldowns;
+
+    Gamble(Message msg, LinkedBlockingQueue<MessageOut> mq, Map<String, Long> mp) throws IOException {
         super(msg, mq);
+        this.cooldowns = mp;
         this.setPermissionLevel(Settings.getSettings().getLocalized("Gamble").get("permission_level"));
     }
 
     @Override
     public void run() {
-        if (isAllowed()) {
+        if (isAllowed() && cooldownCheck()) {
+            cooldowns.put(this.m.getDisplayName(), Instant.now().getEpochSecond());
             String indices[] = this.m.getMessage().split(" ");
             if (indices.length > 2) {
                 try {
@@ -75,6 +81,16 @@ class Gamble extends Command {
                 }
             }
         }
+    }
+
+    private boolean cooldownCheck() {
+        long cooldown = 30;
+        try {
+            cooldown = Long.parseLong(Settings.getSettings().getLocalized("Gamble").get("cooldown"));
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return !cooldowns.containsKey(this.m.getDisplayName()) || ((Instant.now().getEpochSecond() - cooldowns.get(this.m.getDisplayName())) > cooldown);
     }
 
     private boolean pointCheck(int points) {

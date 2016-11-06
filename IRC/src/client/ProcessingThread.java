@@ -38,6 +38,7 @@ public class ProcessingThread implements Runnable{
     private Commands commands;
     private Logger processingLogger = new Logger("PROCESSING_LOG", "PROCESSING_THREAD");
     private Map<String, LinkedBlockingQueue<Message>> queueMap = new HashMap<>();
+    private Map<String, Map<String, Long>> cooldownMap = new HashMap<>();
 
     public ProcessingThread(LinkedBlockingQueue<Message> m, LinkedBlockingQueue<MessageOut> n, Future k, ThreadPoolCached th) throws IOException {
         this.messageQueueIn = m;
@@ -46,6 +47,7 @@ public class ProcessingThread implements Runnable{
         this.poolCached = th;
         this.commands = new Commands();
         this.initializeQueues();
+        this.initializeCooldownMap();
     }
 
     @Override
@@ -67,7 +69,7 @@ public class ProcessingThread implements Runnable{
                     messageQueueOut.offer(out);
                 }
                 if (Objects.equals(m.getMessageType(), "CHANNEL_MESSAGE") && m.getMessage().startsWith("!")) { // Might be a command, submit it to another thread.
-                    Runnable run = commands.getCommand(m, messageQueueOut, queueMap);
+                    Runnable run = commands.getCommand(m, messageQueueOut, queueMap, cooldownMap);
                     if (run != null) {
                         boolean canCreateRaceThread = false;
                         if (Objects.equals(run.toString(), "racegame")) {
@@ -91,6 +93,10 @@ public class ProcessingThread implements Runnable{
 
     private void initializeQueues() {
         queueMap.put("raceQueue", new LinkedBlockingQueue<Message>());
+    }
+
+    private void initializeCooldownMap() {
+        cooldownMap.put("gamble", new HashMap<>());
     }
 
     public String toString(){

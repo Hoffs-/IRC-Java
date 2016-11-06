@@ -25,11 +25,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Version extends Command{
     Version(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
+        setPermissionLevel("mod");
     }
 
     @Override
     public void run() {
-        this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.3"));
+        if (isAllowed()) this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.4"));
     }
 
     @Override

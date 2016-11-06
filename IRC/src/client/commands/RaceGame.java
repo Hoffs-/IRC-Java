@@ -29,7 +29,6 @@ import io.socket.emitter.Emitter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class RaceGame extends Command implements Runnable {
@@ -40,9 +39,9 @@ class RaceGame extends Command implements Runnable {
     private boolean isStarted;
     private LinkedBlockingQueue<Message> mQueue;
 
-    RaceGame(Message msg, LinkedBlockingQueue<MessageOut> mq, Map<String, LinkedBlockingQueue<Message>> mpq) throws IOException {
+    RaceGame(Message msg, LinkedBlockingQueue<MessageOut> mq, LinkedBlockingQueue<Message> mpq) throws IOException {
         super(msg, mq);
-        this.mQueue = mpq.get("raceQueue");
+        this.mQueue = mpq;
     }
 
     public void run() {
