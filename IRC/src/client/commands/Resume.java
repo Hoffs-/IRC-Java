@@ -26,15 +26,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Resume extends Command {
     Resume(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
+        this.setPermissionLevel("mod");
     }
 
     @Override
     public void run() {
-        try {
-            Settings.getSettings().setIsCommandsOn(true);
-            this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution resumed"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (isAllowed()) {
+            try {
+                Settings.getSettings().setIsCommandsOn(true);
+                this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution resumed"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

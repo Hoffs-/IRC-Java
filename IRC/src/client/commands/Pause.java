@@ -26,15 +26,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Pause extends Command {
     Pause(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
+        this.setPermissionLevel("mod");
     }
 
     @Override
     public void run() {
-        try {
-            Settings.getSettings().setIsCommandsOn(false);
-            this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution paused"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (isAllowed()) {
+            try {
+                Settings.getSettings().setIsCommandsOn(false);
+                this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution paused"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
