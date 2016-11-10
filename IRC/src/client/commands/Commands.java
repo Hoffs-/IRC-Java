@@ -36,6 +36,8 @@ public class Commands {
     private static final String RACE = "race";
     private static final String VERSION = "version";
     private static final String GAMBLE = "gamble";
+    private static final String PAUSE = "pause";
+    private static final String RESUME = "resume";
     private Message m;
     private Map<String, String> commands = new HashMap<>();
     private LinkedBlockingQueue<MessageOut> mQ = new LinkedBlockingQueue<>();
@@ -60,6 +62,8 @@ public class Commands {
             commands.put(commandsLocalized.get("race"), "race");
             commands.put(commandsLocalized.get("gamble"), "gamble");
             commands.put("!version", "version");
+            commands.put("!pause", "pause");
+            commands.put("!resume", "resume");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,6 +97,10 @@ public class Commands {
                         return new Version(this.m, this.mQ);
                     case GAMBLE:
                         return new Gamble(this.m, this.mQ, this.cooldownMap.get("gamble"));
+                    case PAUSE:
+                        return new Pause(this.m, this.mQ);
+                    case RESUME:
+                        return new Resume(this.m, this.mQ);
                     default:
                         break;
                 }

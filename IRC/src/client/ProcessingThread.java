@@ -76,11 +76,15 @@ public class ProcessingThread implements Runnable{
                             if (raceFuture == null) canCreateRaceThread = true;
                             else if (raceFuture.isDone()) canCreateRaceThread = true;
                         }
-                        if (Objects.equals(run.toString(), "racegame") && canCreateRaceThread && m.getMessage().startsWith("!race prepare")) {
-                            queueMap.get("raceQueue").clear();
-                            raceFuture = poolCached.startThread(run);
-                        } else if (!Objects.equals(run.toString(), "racegame")) {
+                        if (run.toString().equals("resume")) {
                             poolCached.startThread(run);
+                        } else if (Settings.getSettings().getIsCommandsOn()) {
+                            if (Objects.equals(run.toString(), "racegame") && canCreateRaceThread && m.getMessage().startsWith("!race prepare")) {
+                                queueMap.get("raceQueue").clear();
+                                raceFuture = poolCached.startThread(run);
+                            } else if (!Objects.equals(run.toString(), "racegame")) {
+                                poolCached.startThread(run);
+                            }
                         }
                     }
                     if (raceFuture != null) {if (m.getMessage().startsWith("!race") && !raceFuture.isDone()) {queueMap.get("raceQueue").offer(m);}}

@@ -18,23 +18,27 @@ package client.commands;
 
 import client.utils.Message;
 import client.utils.MessageOut;
+import client.utils.Settings;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Version extends Command{
-    Version(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+class Resume extends Command {
+    Resume(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
         super(msg, mq);
-        setPermissionLevel("mod");
     }
 
     @Override
     public void run() {
-        if (isAllowed()) this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.5"));
+        try {
+            Settings.getSettings().setIsCommandsOn(true);
+            this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution resumed"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
     public String toString() {
-        return "Version";
+        return "resume";
     }
 }

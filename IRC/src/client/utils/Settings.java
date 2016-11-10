@@ -41,6 +41,7 @@ public class Settings {
     private int pointsToAdd = 0;
     private ArrayList<String> channels = new ArrayList<>();
     private CommandsSettings commandsSettings;
+    private boolean isCommandsOn = false;
 
     private Settings() throws IOException {
         this.getSettingsFromJson();
@@ -88,6 +89,10 @@ public class Settings {
         this.pointsToAdd = pointsToAdd;
     }
 
+    public synchronized boolean getIsCommandsOn() { return this.isCommandsOn; }
+
+    public synchronized void setIsCommandsOn(boolean chk) { this.isCommandsOn = chk; }
+
     private void getSettingsFromJson() throws IOException {
         JsonParser parser = new JsonParser();
         if (!this.fo.exists() || !this.fo.exists() || !(this.fi.length() > 0)) {
@@ -106,6 +111,7 @@ public class Settings {
             this.pointsToAdd = this.settings.get("point_increment").getAsInt();
             this.interval = this.settings.get("point_interval").getAsInt();
             JsonArray arr = this.settings.get("channels").getAsJsonArray();
+            if (this.settings.get("commands_enabled").getAsString().equals("true")) this.isCommandsOn = true;
             for (JsonElement chan : arr) {
                 channels.add(chan.getAsString());
             }
