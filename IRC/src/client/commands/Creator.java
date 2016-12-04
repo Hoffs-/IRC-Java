@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 
@@ -24,14 +25,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class Creator extends Command{
 
-    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    Creator(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("creator");
+        logger.write("Created.", "Creator");
     }
 
     @Override
     public void run() {
+        logger.write("Running.", "Creator");
         if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "My creator and owner is Hoffs!"));
+        logger.write("Finished.", "Creator");
     }
 
     public String toString() {

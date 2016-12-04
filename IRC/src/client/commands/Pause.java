@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 import client.utils.Settings;
@@ -24,24 +25,23 @@ import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class Pause extends Command {
-    Pause(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    Pause(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("mod");
+        logger.write("Created.", "Pause");
     }
 
     @Override
     public void run() {
+        logger.write("Running.", "Pause");
         if (isAllowed()) {
-            try {
-                Settings.getSettings().setIsCommandsOn(false);
-                this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution paused"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Settings.getSettings().setIsCommandsOn(false);
+            this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution paused"));
         }
+        logger.write("Running.", "Pause");
     }
 
     public String toString() {
-        return "pause";
+        return "Pause";
     }
 }

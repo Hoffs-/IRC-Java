@@ -16,10 +16,7 @@
 
 package client.commands;
 
-import client.utils.Message;
-import client.utils.MessageOut;
-import client.utils.PointsHelper;
-import client.utils.Settings;
+import client.utils.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.socket.client.IO;
@@ -39,16 +36,19 @@ class RaceGame extends Command implements Runnable {
     private boolean isStarted;
     private LinkedBlockingQueue<Message> mQueue;
 
-    RaceGame(Message msg, LinkedBlockingQueue<MessageOut> mq, LinkedBlockingQueue<Message> mpq) throws IOException {
-        super(msg, mq);
+    RaceGame(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger, LinkedBlockingQueue<Message> mpq) throws IOException {
+        super(msg, mq, logger);
         this.mQueue = mpq;
+        logger.write("Created.", "RaceGame");
     }
 
     public void run() {
+        logger.write("Running.", "RaceGame");
         this.isStarted = false;
         while (true) {
             try {
                 this.m = mQueue.take();
+                logger.write("Took message from channel = " + this.m.getChannel() + ", user = " + this.m.getDisplayName() + ": " +this.m.getMessage());
                 String messageIndices[] = m.getMessage().split(" ");
                 if (messageIndices.length > 1) {
                     if (messageIndices[1].startsWith(Settings.getSettings().getLocalized("Race").get("command_prepare"))) {
@@ -68,10 +68,11 @@ class RaceGame extends Command implements Runnable {
                     }
                 }
                 if (!this.isStarted) break;
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        this.mQueue.clear();
     }
 
     private void prepareRace() {

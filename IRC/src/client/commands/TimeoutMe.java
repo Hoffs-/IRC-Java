@@ -19,29 +19,29 @@ package client.commands;
 import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
-import client.utils.Settings;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Resume extends Command {
-    Resume(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+class TimeoutMe extends Command {
+
+    TimeoutMe(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
         super(msg, mq, logger);
-        this.setPermissionLevel("mod");
-        logger.write("Created.", "Resume");
+        this.setPermissionLevel("user");
+        logger.write("Created.", "TimeoutMe");
     }
 
-    @Override
     public void run() {
-        logger.write("Running.", "Resume");
-        if (isAllowed()) {
-            Settings.getSettings().setIsCommandsOn(true);
-            this.mq.offer(new MessageOut(this.m.getChannel(), "Bot command execution resumed"));
+        logger.write("Running with: channel = " + this.m.getChannel() + ", user = " + this.m.getDisplayName() + ", message = " + this.m.getMessage(), "TimeoutMe");
+        if (this.isAllowed() && (this.m.getMessage().split(" ").length > 1)) mq.offer(new MessageOut(this.m.getChannel(), "/timeout " + this.m.getDisplayName() + " " + this.m.getMessage().split(" ", 2)[1]));
+        else {
+            mq.offer(new MessageOut(this.m.getChannel(), "Invalid command format. Usage !timeoutme <duration>."));
         }
-        logger.write("Finished.", "Resume");
+        logger.write("Finished.", "TimeoutMe");
     }
 
     public String toString() {
-        return "resume";
+        return "BanMe";
     }
 }
+

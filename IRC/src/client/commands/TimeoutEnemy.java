@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 
@@ -24,15 +25,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class TimeoutEnemy extends Command{
 
-    TimeoutEnemy(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    TimeoutEnemy(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("user");
+        logger.write("Created.", "TimeoutEnemy");
+    }
+
+    public void run() {
+        logger.write("Running with: channel = " + this.m.getChannel() + ", user = " + this.m.getDisplayName() + ", message = " + this.m.getMessage(), "TimeoutEnemy");
         if (this.isAllowed()) {
-            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 360 Sacrifice had to be made.", msg.getDisplayName())));
-            String[] arrS = msg.getMessage().split(" ", 3);
+            mq.offer(new MessageOut(this.m.getChannel(), String.format("/timeout "+"%s 360 Sacrifice had to be made.", this.m.getDisplayName())));
+            String[] arrS = this.m.getMessage().split(" ", 3);
             if (arrS[1].startsWith("@")) arrS[1] = arrS[1].substring(1);
-            mq.offer(new MessageOut(msg.getChannel(), String.format("/timeout "+"%s 90 You have an enemy.", arrS[1])));
+            mq.offer(new MessageOut(this.m.getChannel(), String.format("/timeout "+"%s 90 You have an enemy.", arrS[1])));
         }
+        logger.write("Finished", "TimeoutEnemy");
     }
 
     public String toString() {

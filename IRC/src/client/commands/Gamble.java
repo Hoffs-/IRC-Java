@@ -16,10 +16,7 @@
 
 package client.commands;
 
-import client.utils.Message;
-import client.utils.MessageOut;
-import client.utils.PointsHelper;
-import client.utils.Settings;
+import client.utils.*;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -29,14 +26,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Gamble extends Command {
     private Map<String, Long> cooldowns;
 
-    Gamble(Message msg, LinkedBlockingQueue<MessageOut> mq, Map<String, Long> mp) throws IOException {
-        super(msg, mq);
+    Gamble(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger, Map<String, Long> mp) throws IOException {
+        super(msg, mq, logger);
         this.cooldowns = mp;
         this.setPermissionLevel(Settings.getSettings().getLocalized("Gamble").get("permission_level"));
+        logger.write("Created with variables: channel =" + this.m.getChannel() + ", user = " + this.m.getDisplayName() + ".", "Gamble");
     }
 
     @Override
     public void run() {
+        logger.write("Running.", "Gamble");
         if (isAllowed() && cooldownCheck()) {
             cooldowns.put(this.m.getDisplayName(), Instant.now().getEpochSecond());
             String indices[] = this.m.getMessage().split(" ");
@@ -44,6 +43,7 @@ class Gamble extends Command {
                 try {
                     int pointsToGamble = Integer.parseInt(indices[1]);
                     int chance = Integer.parseInt(indices[2]);
+                    logger.write("Variables: points = " + pointsToGamble + ",  chance = " + chance, "Gamble");
                     if (!(chance > 100 || chance <= 0)) {
                         gambleLogic(pointsToGamble, chance);
                     } else {
@@ -51,11 +51,7 @@ class Gamble extends Command {
                     }
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
-                    try {
-                        this.mq.offer(new MessageOut(this.m.getChannel(), Settings.getSettings().getLocalized("Gamble").get("gamble_info")));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    this.mq.offer(new MessageOut(this.m.getChannel(), Settings.getSettings().getLocalized("Gamble").get("gamble_info")));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -65,29 +61,22 @@ class Gamble extends Command {
                     gambleLogic(pointsToGamble);
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
-                    try {
-                        this.mq.offer(new MessageOut(this.m.getChannel(), Settings.getSettings().getLocalized("Gamble").get("gamble_info")));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                try {
                     this.mq.offer(new MessageOut(this.m.getChannel(), Settings.getSettings().getLocalized("Gamble").get("gamble_info")));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            } else {
+                this.mq.offer(new MessageOut(this.m.getChannel(), Settings.getSettings().getLocalized("Gamble").get("gamble_info")));
             }
         }
+        logger.write("Finished", "Gamble");
     }
 
     private boolean cooldownCheck() {
         long cooldown = 30;
         try {
             cooldown = Long.parseLong(Settings.getSettings().getLocalized("Gamble").get("cooldown"));
-        } catch (IOException | NumberFormatException e) {
+        } catch (NumberFormatException e) {
             e.printStackTrace();
         }
         return !cooldowns.containsKey(this.m.getDisplayName()) || ((Instant.now().getEpochSecond() - cooldowns.get(this.m.getDisplayName())) > cooldown);
@@ -118,9 +107,11 @@ class Gamble extends Command {
                 int rounded = (int) prize;
                 new PointsHelper().AddPoints(this.m.getDisplayName(), rounded, this.m.getChannel());
                 this.mq.offer(new MessageOut(this.m.getChannel(), String.format(Settings.getSettings().getLocalized("Gamble").get("gamble_win"), this.m.getDisplayName(), Integer.toString(points + rounded))));
+                this.logger.write("Won: " + Integer.toString(points + rounded) + ".", "Gamble");
             } else {
                 new PointsHelper().RemovePoints(this.m.getDisplayName(), points, this.m.getChannel());
                 this.mq.offer(new MessageOut(this.m.getChannel(), String.format(Settings.getSettings().getLocalized("Gamble").get("gamble_lost"), this.m.getDisplayName(), Integer.toString(points))));
+                this.logger.write("Lost: " + Integer.toString(points) + ".", "Gamble");
             }
         } else {
             this.mq.offer(new MessageOut(this.m.getChannel(), String.format(Settings.getSettings().getLocalized("Gamble").get("gamble_insufficient"), this.m.getDisplayName())));

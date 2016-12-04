@@ -20,10 +20,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,11 +30,11 @@ class CommandsSettings {
     private File fo = new File("settings");
     private JsonObject commandsObj = null;
 
-    private CommandsSettings() throws IOException {
+    private CommandsSettings() {
         this.parseJson();
     }
 
-    static synchronized CommandsSettings getCommandSettings() throws IOException {
+    static synchronized CommandsSettings getCommandSettings() {
         if (ref == null) {
             ref = new CommandsSettings();
         }
@@ -54,16 +51,21 @@ class CommandsSettings {
         return makeMap(arr);
     }
 
-    private void parseJson() throws IOException {
+    private void parseJson() {
         JsonParser parser = new JsonParser();
         if (!this.fo.exists() || !this.fo.exists() || !(this.fi.length() > 0)) {
             this.writeDefault();
         }
-        JsonElement obj = parser.parse(new FileReader("settings/commands.json"));
-        this.commandsObj = obj.getAsJsonObject();
-        if (this.commandsObj.toString().contains("null")) {
-            System.out.println("Please set up your command settings first");
-            System.exit(0);
+        JsonElement obj;
+        try {
+            obj = parser.parse(new FileReader("settings/commands.json"));
+            this.commandsObj = obj.getAsJsonObject();
+            if (this.commandsObj.toString().contains("null")) {
+                System.out.println("Please set up your command settings first");
+                System.exit(0);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -76,9 +78,14 @@ class CommandsSettings {
         return mp;
     }
 
-    private void writeDefault() throws IOException {
+    private void writeDefault() {
         this.fo.mkdir();
-        FileWriter set = new FileWriter(this.fi);
+        FileWriter set = null;
+        try {
+            set = new FileWriter(this.fi);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         JsonParser parser = new JsonParser();
         String defaultLocalization = "{\n" +
                 "  \"Commands\": {\n" +
@@ -124,9 +131,15 @@ class CommandsSettings {
                 "  }\n" +
                 "}";
         JsonObject defaultSettings = parser.parse(defaultLocalization).getAsJsonObject();
-        set.write(defaultSettings.toString());
-        set.flush();
-        set.close();
+        try {
+            if (set != null) {
+                set.write(defaultSettings.toString());
+                set.flush();
+                set.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Please set up your settings first");
         System.exit(0);
     }

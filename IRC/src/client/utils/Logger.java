@@ -54,15 +54,23 @@ public class Logger {
 
 
 
-    public void write(String message, String module) throws IOException {
+    public void write(String message, String module) {
         DateTimeFormatter defaultFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        this.bw.write("[" + LocalDateTime.now().format(defaultFormat) + "][" + this.prefix + "][" + module + "] " + message + "\n");
-        this.bw.flush();
+        try {
+            this.bw.write("[" + LocalDateTime.now().format(defaultFormat) + "][" + this.prefix + "][" + module + "] " + message + "\n");
+            this.bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void write(String message) throws IOException {
+    public void write(String message) {
         DateTimeFormatter defaultFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        this.bw.write("[" + LocalDateTime.now().format(defaultFormat) + "][" + this.prefix + "] " + message + "\n");
-        this.bw.flush();
+        try {
+            this.bw.write("[" + LocalDateTime.now().format(defaultFormat) + "][" + this.prefix + "] " + message + "\n");
+            this.bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

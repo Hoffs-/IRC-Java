@@ -17,6 +17,7 @@
 package client.commands;
 
 import client.apis.TwitchAPI;
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 import client.utils.PointsHelper;
@@ -32,21 +33,24 @@ public class AutoPoints extends Command {
     private int ptsToAdd = s.getPointsToAdd();
     private boolean customPts = false;
 
-    AutoPoints(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    AutoPoints(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
+        logger.write("Created AutoPoints", "AutoPoints");
     }
 
     public AutoPoints() throws IOException {
     }
 
-    AutoPoints(Message msg, LinkedBlockingQueue<MessageOut> mq, int pts) throws IOException {
-        super(msg, mq);
+    AutoPoints(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger, int pts) throws IOException {
+        super(msg, mq, logger);
         this.ptsToAdd = pts;
         customPts = true;
+        logger.write("Created AutoPoints with custom points: " + pts, "AutoPoints");
     }
 
     @Override
     public void run() {
+        logger.write("Started.", "AutoPoints");
         TwitchAPI api = new TwitchAPI(s.getClientid(), s.getOauth());
         if (customPts) {
             this.process(this.m.getChannel(), api);
@@ -57,6 +61,7 @@ public class AutoPoints extends Command {
                 if (api.isLive(chan)) this.process(chan, api);
             }
         }
+        logger.write("Finished.", "AutoPoints");
     }
 
     private void process(String chan, TwitchAPI api) {

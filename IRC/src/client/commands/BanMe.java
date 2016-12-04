@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 
@@ -24,10 +25,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class BanMe extends Command{
 
-    public BanMe(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    BanMe(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("user");
-        if (this.isAllowed()) mq.offer(new MessageOut(msg.getChannel(), "/ban " + msg.getDisplayName()));
+    }
+
+    public void run() {
+        if (this.isAllowed()) mq.offer(new MessageOut(this.m.getChannel(), "/ban " + this.m.getDisplayName()));
     }
 
     public String toString() {

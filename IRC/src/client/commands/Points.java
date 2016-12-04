@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 import client.utils.PointsHelper;
@@ -33,9 +34,10 @@ class Points extends Command implements Runnable {
     private PointsHelper pts = new PointsHelper();
     private Map<String, String> commands = new HashMap<>();
 
-    Points(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    Points(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.InitializeCommands();
+        logger.write("Created.", "Points");
     }
 
     private void InitializeCommands() {
@@ -47,12 +49,14 @@ class Points extends Command implements Runnable {
 
     @Override
     public void run() {
+        logger.write("Running.", "Points");
         String[] indices = this.m.getMessage().split(" ");
         if (indices.length < 2) {
             this.mq.offer(new MessageOut(this.m.getChannel(), s.getLocalized("Points").get("available")));
             return;
         }
         if (this.commands.containsKey(this.m.getMessage().split(" ", 3)[1])) {
+            logger.write("Starting command: " + this.m.getMessage().split(" ", 2)[1], "Points");
             switch (this.commands.get(this.m.getMessage().split(" ", 3)[1])) {
                 case ADD:
                     this.setPermissionLevel(s.getLocalized("Points", "Add").get("permission_level"));
@@ -74,14 +78,15 @@ class Points extends Command implements Runnable {
                     break;
             }
         }
+        logger.write("Finished.", "Points");
     }
 
     private void AutoPoints() {
         try {
             if (this.m.getMessage().split(" ").length > 2) {
-                new AutoPoints(this.m, this.mq, Integer.parseInt(this.m.getMessage().split(" ", 3)[2])).run();
+                new AutoPoints(this.m, this.mq, this.logger, Integer.parseInt(this.m.getMessage().split(" ", 3)[2])).run();
             } else {
-                new AutoPoints(this.m, this.mq).run();
+                new AutoPoints(this.m, this.mq, this.logger).run();
             }
         } catch (IOException e) {
             e.printStackTrace();

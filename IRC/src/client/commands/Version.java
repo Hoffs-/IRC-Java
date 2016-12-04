@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 
@@ -23,14 +24,17 @@ import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class Version extends Command{
-    Version(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    Version(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         setPermissionLevel("mod");
+        logger.write("Created.", "Version");
     }
 
     @Override
     public void run() {
-        if (isAllowed()) this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.1.5"));
+        logger.write("Running.", "Version");
+        if (isAllowed()) this.mq.offer(new MessageOut(m.getChannel(), "Current version: 0.3.2"));
+        logger.write("Finished.", "Version");
     }
 
     @Override

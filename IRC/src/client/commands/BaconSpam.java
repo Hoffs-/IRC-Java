@@ -16,6 +16,7 @@
 
 package client.commands;
 
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 
@@ -24,21 +25,28 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class BaconSpam extends Command{
 
-    BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    BaconSpam(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("creator");
+        logger.write("Created.", "BaconSpam");
+    }
+
+    public void run() {
+        logger.write("Started.", "BaconSpam");
         if (this.isAllowed()) {
             try {
-                int numb = Integer.parseInt(msg.getMessage().split(" ", 3)[1]);
+                int numb = Integer.parseInt(this.m.getMessage().split(" ", 3)[1]);
+                logger.write("Running with variables: " + numb + " " + this.m.getMessage().split(" ", 3)[2]);
                 int i = 0;
                 while (i < numb) {
-                    mq.offer(new MessageOut(msg.getChannel(), msg.getMessage().split(" ", 3)[2]));
+                    mq.offer(new MessageOut(this.m.getChannel(), this.m.getMessage().split(" ", 3)[2]));
                     i++;
                 }
             } catch (NumberFormatException e) {
-                mq.offer(new MessageOut(msg.getChannel(), msg.getDisplayName() + " Invalid format. (!baconspam <amount> <message>)"));
+                mq.offer(new MessageOut(this.m.getChannel(), this.m.getDisplayName() + " Invalid format. (!baconspam <amount> <message>)"));
             }
         }
+        logger.write("Finished.", "BaconSpam");
     }
 
     public String toString() {

@@ -22,10 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -43,12 +40,12 @@ public class Settings {
     private CommandsSettings commandsSettings;
     private boolean isCommandsOn = false;
 
-    private Settings() throws IOException {
+    private Settings() {
         this.getSettingsFromJson();
         commandsSettings = CommandsSettings.getCommandSettings();
     }
 
-    public static synchronized Settings getSettings() throws IOException {
+    public static synchronized Settings getSettings() {
         if (ref == null) {
             ref = new Settings();
         }
@@ -93,13 +90,18 @@ public class Settings {
 
     public synchronized void setIsCommandsOn(boolean chk) { this.isCommandsOn = chk; }
 
-    private void getSettingsFromJson() throws IOException {
+    private void getSettingsFromJson() {
         JsonParser parser = new JsonParser();
         if (!this.fo.exists() || !this.fo.exists() || !(this.fi.length() > 0)) {
             this.writeDefault();
         }
-        JsonElement obj = parser.parse(new FileReader("settings/config.json"));
-        this.settings = obj.getAsJsonObject();
+        JsonElement obj = null;
+        try {
+            obj = parser.parse(new FileReader("settings/config.json"));
+            this.settings = obj.getAsJsonObject();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         if (this.settings.toString().contains("null")) {
             System.out.println("Please set up your settings first");
             System.exit(0);
@@ -122,15 +124,20 @@ public class Settings {
         throw new CloneNotSupportedException();
     }
 
-    private void writeDefault() throws IOException {
+    private void writeDefault() {
         this.fo.mkdir();
-        FileWriter set = new FileWriter(this.fi);
-        JsonParser parser = new JsonParser();
-        JsonObject defaultSettings = parser.parse("{\"username\":\"\",\"token\":\"oauth:\", \"clientid\":\"\", \"oauth\":\"\", \"point_increment\":\"10\", \"point_interval\":\"15\", \"channels\":[]}").getAsJsonObject();
-        set.write(defaultSettings.toString());
-        set.flush();
-        set.close();
-        System.out.println("Please set up your settings first");
+        FileWriter set;
+        try {
+            set = new FileWriter(this.fi);
+            JsonParser parser = new JsonParser();
+            JsonObject defaultSettings = parser.parse("{\"username\":\"\",\"token\":\"oauth:\", \"clientid\":\"\", \"oauth\":\"\", \"point_increment\":\"10\", \"point_interval\":\"15\", \"channels\":[]}").getAsJsonObject();
+            set.write(defaultSettings.toString());
+            set.flush();
+            set.close();
+            System.out.println("Please set up your settings first");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.exit(0);
     }
 

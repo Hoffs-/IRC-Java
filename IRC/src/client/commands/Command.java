@@ -16,10 +16,7 @@
 
 package client.commands;
 
-import client.utils.Message;
-import client.utils.MessageOut;
-import client.utils.Settings;
-import client.utils.Tags;
+import client.utils.*;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,9 +24,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 abstract class Command implements Runnable { // Default template for Commands
     Settings s;
     protected String user;
+    protected Message m;
+    protected Logger logger;
     private String token;
     private String messageType = "CHAT";
-    protected Message m;
     LinkedBlockingQueue<MessageOut> mq;
     private String permissionLevel = "user";
 
@@ -40,11 +38,12 @@ abstract class Command implements Runnable { // Default template for Commands
         token = s.getToken();
     }
 
-    Command(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
+    Command(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
         permissionLevel = "user";
         this.m = msg;
         this.mq = mq;
         this.s = Settings.getSettings();
+        this.logger = logger;
         user = s.getUser();
         token = s.getToken();
     }

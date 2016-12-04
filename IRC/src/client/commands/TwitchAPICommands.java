@@ -17,6 +17,7 @@
 package client.commands;
 
 import client.apis.TwitchAPI;
+import client.utils.Logger;
 import client.utils.Message;
 import client.utils.MessageOut;
 import com.google.gson.JsonObject;
@@ -26,17 +27,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class TwitchAPICommands extends Command {
 
-    TwitchAPICommands(Message msg, LinkedBlockingQueue<MessageOut> mq) throws IOException {
-        super(msg, mq);
+    TwitchAPICommands(Message msg, LinkedBlockingQueue<MessageOut> mq, Logger logger) throws IOException {
+        super(msg, mq, logger);
         this.setPermissionLevel("creator");
+        logger.write("Created.", "TwitchAPI");
   }
 
     @Override
     public void run() {
+        logger.write("Running with: channel = " + this.m.getChannel() + ", user = " + this.m.getDisplayName() + ", message = " + this.m.getMessage(), "TwitchAPI");
         if (!this.isAllowed()) return;
         if (this.m.getMessage().startsWith("!game")) {
             String[] arr = this.m.getMessage().split(" ", 2);
-
             if (arr.length > 1) {
                 JsonObject innerbody = new JsonObject();
                 innerbody.addProperty("game", this.m.getMessage().split(" ", 2)[1]);
@@ -51,6 +53,7 @@ class TwitchAPICommands extends Command {
                 this.mq.offer(new MessageOut(this.m.getChannel().toLowerCase(), api.GET("https://api.twitch.tv/kraken/channels/" + this.m.getChannel()).get("game").toString()));
             }
         }
+        logger.write("Finished.", "TwitchAPI");
     }
 
     public String toString() {
